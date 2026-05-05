@@ -93,7 +93,6 @@ namespace BLAZAM.Services.Background
                                 webUser.PermissionMappings.Add(new PermissionMapping
                                 {
                                     AccessLevels = map.AccessLevels,
-                                    Id = map.Id,
                                     OU = userContainerDN
                                 });
                             }
@@ -129,17 +128,19 @@ namespace BLAZAM.Services.Background
         /// <summary>
         /// Extracts the parent container distinguished name from a given DN by removing the first RDN component.
         /// For example, "CN=John,OU=Sales,DC=corp,DC=com" returns "OU=Sales,DC=corp,DC=com".
+        /// Handles escaped commas (e.g., "CN=Smith\, John,OU=Sales,...") correctly.
         /// </summary>
         private static string? GetParentContainerDN(string? dn)
         {
             if (string.IsNullOrEmpty(dn))
                 return null;
 
-            var commaIndex = dn.IndexOf(',');
-            if (commaIndex < 0)
+            // Match the first unescaped comma (LDAP DNs use '\,' for literal commas in values)
+            var match = System.Text.RegularExpressions.Regex.Match(dn, @"(?<!\\),");
+            if (!match.Success)
                 return null;
 
-            return dn.Substring(commaIndex + 1);
+            return dn.Substring(match.Index + 1);
         }
 
 
