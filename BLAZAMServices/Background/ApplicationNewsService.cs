@@ -46,33 +46,9 @@ namespace BLAZAM.Services.Background
 
         protected override void Execute(object? state = null)
         {
-            Job newsCollectionJob = new(AppLocalization[Lang.Fetch_News])
-            {
-                StopOnFailedStep = true
-            };
-            JobStep collectStep = new(AppLocalization[Lang.Excute], async (step) =>
-            {
-                try
-                {
-                    _pollCompleted = false;
-                    try
-                    {
-                        return await GetNewsAsync(_httpClient);
-                    }
-                    catch
-                    {
-                        return await GetNewsAsync(_secondaryHttpClient);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Loggers.SystemLogger.Warning(ex, "Unable to contact application news API {@URI}", _httpClient.BaseAddress);
-                }
-
-                return false;
-            });
-            newsCollectionJob.AddStep(collectStep);
-            newsCollectionJob.Run();
+            // News feed from upstream provider is disabled in this fork.
+            // To re-enable, restore the HTTP client calls to the upstream news API.
+            _pollCompleted = true;
         }
 
         private async Task<bool> GetNewsAsync(HttpClient httpClient)
