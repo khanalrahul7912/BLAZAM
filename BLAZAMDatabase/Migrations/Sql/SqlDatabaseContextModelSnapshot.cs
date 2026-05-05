@@ -1794,6 +1794,9 @@ namespace BLAZAM.Common.Migrations.Sql
                     b.Property<bool>("RequireQAOnPasswordReset")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("UseDynamicOU")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DelegateSid")

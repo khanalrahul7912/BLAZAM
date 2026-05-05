@@ -1794,6 +1794,9 @@ namespace BLAZAM.Common.Migrations.MySql
                     b.Property<bool>("RequireQAOnPasswordReset")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<bool>("UseDynamicOU")
+                        .HasColumnType("tinyint(1)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DelegateSid")

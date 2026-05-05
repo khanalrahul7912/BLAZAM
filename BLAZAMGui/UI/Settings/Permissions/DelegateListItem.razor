@@ -70,6 +70,13 @@
                            UncheckedColor="Color.Error"
                            Color="Color.Success"
                            Label="@AppLocalization[Lang.Allow_password_reset]" />
+                <MudSwitch @bind-Value="_delegate.UseDynamicOU"
+                           UncheckedColor="Color.Default"
+                           Color="Color.Info"
+                           Label="@AppLocalization["Dynamic OU Scope"]" />
+                <MudText Typo="Typo.caption" Class="mud-text-secondary">
+                    @AppLocalization["When enabled, permission mappings for this delegate are automatically scoped to the OU where the user currently resides in Active Directory."]
+                </MudText>
                 @if (_delegate.AllowPasswordReset)
                 {
                     <MudContainer>

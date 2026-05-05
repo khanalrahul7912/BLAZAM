@@ -15,6 +15,13 @@ namespace BLAZAM.Database.Models.Permissions
         public bool RequireEmailOnPasswordReset { get; set; } = true;
         public bool RequirePINOnPasswordReset { get; set; }
 
+        /// <summary>
+        /// When true, permission mappings for this delegate are dynamically scoped to the OU
+        /// where the authenticated user currently resides in Active Directory, rather than
+        /// using the statically-configured OU values in the permission mappings.
+        /// </summary>
+        public bool UseDynamicOU { get; set; }
+
         public int MinimumPINLength { get; set; } = 4;
         public bool RequireQAOnPasswordReset { get; set; }
 

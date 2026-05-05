@@ -81,16 +81,28 @@ namespace BLAZAM.Services.Background
                     || directoryUser.SID.ToSidString().Equals(permissiondelegate.SID.ToSidString())))
                 {
                     webUser.PermissionDelegates.Add(l);
-                    webUser.PermissionMappings.AddRange(l.PermissionsMaps);
-                }
 
-                if (permissiondelegate != null
-                    &&
-                    (permissiondelegate is IADGroup && directoryUser.IsANestedMemberOf(permissiondelegate as IADGroup)
-                    || directoryUser.SID.ToSidString().Equals(permissiondelegate.SID.ToSidString())))
-                {
-                    webUser.PermissionDelegates.Add(l);
-                    webUser.PermissionMappings.AddRange(l.PermissionsMaps);
+                    if (l.UseDynamicOU)
+                    {
+                        // Dynamically scope permissions to the OU in which the user currently resides
+                        var userContainerDN = GetParentContainerDN(directoryUser.DN);
+                        if (userContainerDN != null)
+                        {
+                            foreach (var map in l.PermissionsMaps)
+                            {
+                                webUser.PermissionMappings.Add(new PermissionMapping
+                                {
+                                    AccessLevels = map.AccessLevels,
+                                    Id = map.Id,
+                                    OU = userContainerDN
+                                });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        webUser.PermissionMappings.AddRange(l.PermissionsMaps);
+                    }
                 }
 
             }
@@ -112,6 +124,22 @@ namespace BLAZAM.Services.Background
             }
 #pragma warning restore S6966 // Awaitable method should be used
 
+        }
+
+        /// <summary>
+        /// Extracts the parent container distinguished name from a given DN by removing the first RDN component.
+        /// For example, "CN=John,OU=Sales,DC=corp,DC=com" returns "OU=Sales,DC=corp,DC=com".
+        /// </summary>
+        private static string? GetParentContainerDN(string? dn)
+        {
+            if (string.IsNullOrEmpty(dn))
+                return null;
+
+            var commaIndex = dn.IndexOf(',');
+            if (commaIndex < 0)
+                return null;
+
+            return dn.Substring(commaIndex + 1);
         }
 
 
