@@ -1,7 +1,7 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: linear-gradient(180deg, rgba(245,248,255,0.7) 0%, rgba(255,255,255,0.95) 220px);
+    background: linear-gradient(180deg, rgba(245,248,255,0.7) 0%, rgba(255,255,255,0.95) min(20vh, 220px));
     color: #1f2937;
 }
 
@@ -305,6 +305,5 @@ a, .btn-link {
     display: table;
     clear: both;
 }
-
 
 

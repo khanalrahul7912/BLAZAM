@@ -75,6 +75,8 @@ Environment=ASPNETCORE_ENVIRONMENT=Production
 WantedBy=multi-user.target
 ```
 
+> The executable remains `BLAZAM.dll` because the upstream assembly name has not been renamed.
+
 Enable and start:
 
 ```bash
@@ -118,6 +120,21 @@ sudo systemctl reload nginx
 ```bash
 sudo apt-get install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d YOUR_DOMAIN
+```
+
+### 7) Optional centralized Seq logging
+
+Add optional Seq settings in your `appsettings.Production.json`:
+
+```json
+{
+  "Logging": {
+    "Seq": {
+      "Url": "http://your-seq-server:5341",
+      "ApiKey": "your-seq-ingestion-api-key"
+    }
+  }
+}
 ```
 
 ---

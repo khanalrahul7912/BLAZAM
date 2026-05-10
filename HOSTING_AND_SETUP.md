@@ -26,7 +26,7 @@ sudo apt-get update && sudo apt-get install -y dotnet-runtime-8.0
 ### Step 2 – Create a dedicated service user
 
 ```bash
-sudo useradd -r -s /bin/false admanagement
+sudo useradd -r -s /usr/sbin/nologin admanagement
 ```
 
 ---
