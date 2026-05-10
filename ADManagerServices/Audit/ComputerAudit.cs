@@ -1,0 +1,91 @@
+﻿using ADManager.ActiveDirectory.Interfaces;
+using ADManager.Database.Models.Audit;
+using ADManager.Helpers;
+using ADManager.Logger;
+using ADManager.Session.Interfaces;
+using Microsoft.JSInterop;
+
+namespace ADManager.Services.Audit
+{
+    public class ComputerAudit(IAppDatabaseFactory factory, IApplicationUserState? userState = null, IJSRuntime? jSRuntime = null) : DirectoryAudit(factory, userState, jSRuntime)
+    {
+        public async Task<bool> Moved(IDirectoryEntryAdapter movedComputer, IADOrganizationalUnit ouMovedFrom, IADOrganizationalUnit ouMovedTo)
+        {
+            Analytics?.ObjectMoved(ActiveDirectoryObjectType.Computer);
+
+            await Log(c => c.DirectoryEntryAuditLogs,
+               AuditActions.Computer_Moved,
+            movedComputer,
+               ouMovedFrom.OU,
+               ouMovedTo.OU);
+            return true;
+        }
+        public override async Task<bool> Changed(IDirectoryEntryAdapter changedEntry, List<AuditChangeLog> changes)
+        {
+            Analytics?.ObjectModified(ActiveDirectoryObjectType.Computer);
+            await Log(c => c.DirectoryEntryAuditLogs, AuditActions.Computer_Edited, changedEntry, changes.GetValueChangesString(c => c.OldValue), changes.GetValueChangesString(c => c.NewValue));
+            return true;
+        }
+
+        public override async Task<bool> Deleted(IDirectoryEntryAdapter deletedEntry)
+        {
+            Analytics?.ObjectDeleted(ActiveDirectoryObjectType.Computer);
+
+            return await Log(t => t.DirectoryEntryAuditLogs,
+             AuditActions.Computer_Deleted, deletedEntry);
+        }
+
+        public async Task<bool> Assigned(IDirectoryEntryAdapter member, IDirectoryEntryAdapter parent)
+        {
+            Analytics?.ObjectAssigned(ActiveDirectoryObjectType.Computer);
+
+            await Log(c => c.DirectoryEntryAuditLogs,
+               AuditActions.Computer_Assigned,
+            member,
+               null,
+               "Assigned to " + parent.DN);
+
+            return true;
+        }
+        public async Task<bool> Unassigned(IDirectoryEntryAdapter member, IDirectoryEntryAdapter parent)
+        {
+            Analytics?.ObjectUnassigned(ActiveDirectoryObjectType.Computer);
+
+            await Log(c => c.DirectoryEntryAuditLogs,
+               AuditActions.Computer_Unassigned,
+            member,
+               null,
+               "Unassigned from " + parent.DN);
+
+            return true;
+        }
+
+        public override async Task<bool> Searched(IDirectoryEntryAdapter searchedEntry) => await Log(AuditActions.Computer_Searched, (IADComputer)searchedEntry);
+
+        private async Task<bool> Log(string action, IADComputer searchedComputer)
+        {
+
+            try
+            {
+                using var context = await factory.CreateDbContextAsync();
+                context.DirectoryEntryAuditLogs.Add(new ComputerAuditLog
+                {
+                    Sid = searchedComputer.SID.ToSidString(),
+                    Action = action,
+                    Target = searchedComputer.CanonicalName,
+                    Username = UserState?.AuditUsername,
+                    IpAddress = UserState?.IPAddress
+
+                });
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Loggers.SystemLogger.Error(ex, "Unable to write Log to database");
+
+                return false;
+            }
+        }
+    }
+}

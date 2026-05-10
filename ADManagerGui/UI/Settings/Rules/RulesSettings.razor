@@ -1,0 +1,102 @@
+﻿@using ADManager.Database.Models.Rules
+@inherits AppComponentBase
+<MudStack Row="true">
+    <MudText Typo="Typo.h4">
+        @AppLocalization[Lang.Rules] <AppDocumentationButton Page="/admin/rules" />
+    </MudText>
+    <MudSpacer/>
+    <AppIconButton
+        Tooltip="@AppLocalization[Lang.Global_Settings]"
+         Size=Size.Large
+         Disabled=@(_settings==null)
+        Icon="@Icons.Material.Filled.Settings"
+        OnClick="@(()=>{_=_settingsModal.ShowAsync();})"/>
+</MudStack>
+@if (_settings?.RulesEnabled != true)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Class="mb-3">
+        Rules are currently disabled.
+    </MudAlert> 
+}
+<MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-3">
+    Rules will never run against the account provided to AD Manager.
+    <br /><br />
+    Use the Rule Settings button to configure excluded groups you want to protect from rule execution.
+</MudAlert>
+<CascadingValue Value="ViewFilter">
+    <MudGrid Class="border-1">
+        <MudItem xs="12" sm="4" md="3" lg="2">
+            <MudStack>
+                <MudCard>
+                    <MudText Typo="Typo.h6" Class="my-3 ps-3">@AppLocalization[Lang.Object_Type]</MudText>
+                    <MudDivider />
+                    <RuleObjectTypes />
+                </MudCard>
+                <MudCard>
+                    <MudText Typo="Typo.h6" Class="my-3 ps-3">@AppLocalization[Lang.Triggers]</MudText>
+                    <MudDivider />
+                    <RuleTriggers />
+                </MudCard>
+                <MudCard>
+                    <MudSwitch ValueChanged="@((bool val)=>{
+                                                            _compactView=val;
+                                                            _=InvokeAsync(StateHasChanged);
+                                                            })"
+                    Label=@AppLocalization[Lang.Compact_View]
+                    Color="Color.Success"
+                    UncheckedColor="Color.Error" />
+                </MudCard>
+            </MudStack>
+        </MudItem>
+
+        <MudItem xs="12" sm="8" md="9" lg="10">
+            <MudCard>
+                <MudStack Row="true">
+                    <MudText Typo="Typo.h6"
+                    Align="Align.Left"
+                    Class="my-3 ps-3">
+                        @AppLocalization[Lang.Rules]: @AppLocalization[ViewFilter.ObjectType.ToString()]<MudIcon Class="align-middle" Icon="@Icons.Material.Filled.ArrowRight" />@AppLocalization[ViewFilter.Trigger.ToString()]
+                    </MudText>
+                    <MudSpacer />
+                    <MudButton Color="Color.Primary"
+                    OnClick="@(()=>{CreateRule?.Invoke();})">
+                        @AppLocalization[Lang.Create_Rule]
+                    </MudButton>
+                </MudStack>
+                <MudDivider />
+                <RulesForTrigger @ref=_ruleForTriggerDisplay CompactView="_compactView"
+                RulesSettings="this" />
+            </MudCard>
+
+        </MudItem>
+    </MudGrid>
+
+    <AppModal @ref="_settingsModal">
+        <GlobalRuleSettingsModalContent Settings="_settings" OnSaved="@(async()=>{await StateHasChangedAsync();await _ruleForTriggerDisplay.GetRulesAsync();})"/>
+        </AppModal>
+</CascadingValue>
+@code {
+    AppModal? _settingsModal;
+    bool _compactView;
+    public AppDelegate? CreateRule { get; set; }
+    [Parameter]
+    public RuleViewFilter ViewFilter { get; set; }
+    GlobalAutomationRuleSettings? _settings;
+    List<NotificationType> triggerTypes = new();
+    RulesForTrigger? _ruleForTriggerDisplay;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        foreach (NotificationType type in Enum.GetValues(typeof(NotificationType)))
+        {
+            triggerTypes.Add(type);
+        }
+        triggerTypes = triggerTypes.OrderBy(t => t.ToString()).ToList();
+        ViewFilter.ObjectTypeChanged += () => InvokeAsync(StateHasChanged);
+        ViewFilter.TriggerChanged += () => InvokeAsync(StateHasChanged);
+
+        using var context = DbFactory.CreateDbContext();
+        _settings = context?.GlobalAutomationRuleSettings?.FirstOrDefault();
+    }
+}

@@ -4,7 +4,7 @@ namespace PlaywrightTests
 {
     public abstract class Tests : PageTest
     {
-        protected virtual string BaseUrl { get { return "https://demo.blazam.org"; } }
+        protected virtual string BaseUrl => Environment.GetEnvironmentVariable("AD_MANAGEMENT_TEST_URL") ?? "https://localhost";
         [Test]
         public async Task LandingPageHasDemoLoginButtonAndLogsIntoHome()
         {
@@ -91,7 +91,7 @@ namespace PlaywrightTests
         //    await Page.GetByRole(AriaRole.Toolbar).GetByRole(AriaRole.Button).Nth(3).ClickAsync();
         //    await Page.GetByLabel("Show read").CheckAsync();
         //    await Expect(Page.GetByLabel("Show read")).ToBeCheckedAsync();
-        //    await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "Blazam News" })).ToBeVisibleAsync();
+        //    await Expect(Page.GetByRole(AriaRole.Heading, new() { Name = "AD Manager News" })).ToBeVisibleAsync();
         //    await Page.Locator(".mud-overlay").ClickAsync();
 
         //    // Expects the URL to contain intro.
@@ -141,9 +141,8 @@ namespace PlaywrightTests
         public async Task AboutTest()
         {
             await LogIn();
-            await Page.GetByText("BLAZAM " + DateTime.Now.Year).ClickAsync();
-            await Expect(Page.GetByText("Founder: Chris Jacobsen")).ToBeVisibleAsync(new() { Timeout = 30000 });
-            await Expect(Page.GetByText("Dedicated To Maggie")).ToBeVisibleAsync();
+            await Page.GetByText("AD Manager " + DateTime.Now.Year).ClickAsync();
+            await Expect(Page.GetByText("Version:")).ToBeVisibleAsync(new() { Timeout = 30000 });
             await Page.GetByRole(AriaRole.Button, new() { Name = "Close", Exact = true }).First.ClickAsync();
 
             // Expects the URL to contain intro.

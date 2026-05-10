@@ -1,0 +1,35 @@
+﻿@using ADManager.ActiveDirectory.Services
+@using ADManager.Services.Background
+
+@inherits AppModalContent
+
+<ADAutoComplete Label=@AppLocalization[Lang.Application_User]
+                SearchObjectType="ActiveDirectoryObjectType.User"
+                SelectedResult=@selectedUser
+                SelectedResultChanged="@(async(tgt)=>{selectedUser=tgt; await onRun();})" />
+
+
+
+<EffectivePermissionsDataGrid Target="simTarget" Disabled="!simRan" />
+
+@code {
+    private IDirectoryEntryAdapter selectedUser;
+    [Parameter]
+    public IDirectoryEntryAdapter Target { get; set; }
+
+    IDirectoryEntryAdapter? simTarget;
+
+    bool simRan;
+    private async Task onRun()
+    {
+        simRan = false;
+        await StateHasChangedAsync();
+        simTarget = Directory.FindGlobalEntryBySid(Target.SID);
+        var permissionApplicator = new PermissionApplicator(UserStateService, DbFactory, Directory);
+        var simUser = new ApplicationUserState(DbFactory);
+        await permissionApplicator.LoadPermissions(simUser, selectedUser as IADUser);
+        simTarget.SetCurrentUser(simUser.ToActiveDirectoryUserState());
+        simRan = true;
+        await StateHasChangedAsync();
+    }
+}

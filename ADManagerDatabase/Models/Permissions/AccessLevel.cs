@@ -1,0 +1,51 @@
+﻿
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ADManager.Database.Models.Permissions
+{
+    public class AccessLevel : RecoverableAppDbSetBase, IComparable<AccessLevel>
+    {
+        [NotMapped]
+        public const string SelfAccessLevelName = "ADManager_INTERNAL_SelfAccessLevel";
+
+        [Required]
+        public string Name { get; set; }
+        /// <summary>
+        /// All the applied object access mappings for Deny,Read
+        /// </summary>
+        public List<ObjectAccessMapping> ObjectMap { get; set; } = [];
+        public List<ActionAccessMapping> ActionMap { get; set; } = [];
+        public List<FieldAccessMapping> FieldMap { get; set; } = [];
+        public List<PermissionMapping> PermissionMaps { get; set; }
+
+
+
+        public int CompareTo(AccessLevel? other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+
+            return Id.CompareTo(other.Id);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.ToString().GetHashCode();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is AccessLevel al)
+            {
+                if (al.Id == Id)
+                {
+                    return true;
+                }
+            }
+            return base.Equals(obj);
+        }
+    }
+}

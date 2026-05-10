@@ -1,0 +1,36 @@
+﻿namespace ADManager.Themes
+{
+    public class RedTheme : ApplicationTheme
+    {
+        public RedTheme()
+        {
+            _name = "Red";
+
+
+            lightPalette.ActionDefault = "#C39A9A";
+            lightPalette.AppbarBackground = "#A82222";
+            lightPalette.DrawerBackground = "#DCCFCF";
+            lightPalette.DrawerText = "#1E0F0F";
+            lightPalette.Dark = "#290500";
+            lightPalette.Primary = "#D32222";
+            lightPalette.Secondary = "#A70C0C";
+
+            lightPalette.DrawerIcon = "#B89595";
+
+
+            darkPalette.DarkContrastText = "#c7c7c7";
+            darkPalette.TextPrimary = "#c7c7c7";
+            darkPalette.TextSecondary = "#A77E86";
+            darkPalette.ActionDefault = "#B17B7E";
+            darkPalette.Dark = "#1E110F";
+            darkPalette.Primary = "#AB6666";
+            darkPalette.AppbarBackground = "#401313";
+            darkPalette.DrawerBackground = "#1E0F0F";
+            darkPalette.Secondary = "#D45151";
+
+            darkPalette.DrawerIcon = "#B89595";
+
+
+        }
+    }
+}

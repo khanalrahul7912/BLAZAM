@@ -1,0 +1,238 @@
+﻿@using ApplicationNews
+@using ADManager.Update
+@inherits AppComponentBase
+@if (readItems.Count > 0 || unreadItems.Count > 0)
+{
+    <MudMenu @ref=newsMenu
+             Dense=true
+             ListClass="py-0"
+             AnchorOrigin="Origin.BottomRight"
+             TransformOrigin="Origin.TopRight">
+        <ActivatorContent>
+            @{
+                var color = Color.Success;
+            }
+            @if (unreadItems.Count > 0)
+            {
+                color = Color.Info;
+            }
+            <MudBadge Color=Color.Error
+                      Visible="@(unreadItems.Count > 0)"
+                      Overlap=true
+                      BadgeClass="badge-repos cursor-pointer"
+                      Content="@unreadItems.Count">
+                <AppTooltip Text=@("AD Manager "+AppLocalization[Lang.News])>
+                    <AppIconButton OnClick="@(() => context.ToggleAsync())" 
+                        Size="Size.Large"
+                                   Icon="@Icons.Material.TwoTone.NewReleases"
+                                   Color="@color" />
+                </AppTooltip>
+            </MudBadge>
+            <LoadingData Loading=@LoadingData/>
+        </ActivatorContent>
+
+        <ChildContent>
+            <MudContainer Class="px-0"
+                          Style="width:300px;">
+                <MudText Typo=Typo.h6
+                         Class="py-2"
+                         Align="Align.Center">
+                    AD Manager @AppLocalization[Lang.News]
+                </MudText>
+                <MudText Typo="Typo.caption"
+                         Class="px-1 py-2"
+                         Align="Align.Center">
+                    @AppHelpLocalization[HelpLang.News_Provider_Description]
+                </MudText>
+                @foreach (var item in unreadItems.OrderByDescending(x => x.UpdatedAt))
+                {
+                    <ApplicationNewsItem Item=item
+                                         Read=false
+                                         OnClick="@(()=>{ _ = ShowNews(item); })"
+                                         OnRead="@(()=>{
+                                            RefreshItems();
+                                            })" />
+                    <MudDivider />
+                }
+                @if (showRead)
+                {
+                    foreach (var item in readItems.OrderByDescending(x => x.UpdatedAt))
+                    {
+                        <ApplicationNewsItem Item="item"
+                                             Read=true
+                                             OnClick="@(()=>{ ShowNews(item); })" />
+                        <MudDivider />
+
+                    }
+                }
+                else
+                {
+                    if (unreadItems.Count == 0)
+                    {
+                        <MudText Align=Align.Center>
+                            @AppHelpLocalization[HelpLang.No_News]
+                        </MudText>
+                    }
+                }
+                @if (readItems.Count > 0 || unreadItems.Count > 0)
+                {
+                    <MudStack Row=true>
+                        @if (readItems.Count > 0)
+                        {
+                            <MudSwitch @bind-Value=showRead
+                                       Size="Size.Small"
+                                       UncheckedColor="Color.Error"
+                                       Color="Color.Success"
+                                       Class="ps-2"
+                                       Label="@AppLocalization[Lang.Show_read]" />
+                        }
+                        @if (unreadItems.Count > 0)
+                        {
+                            <MudSpacer />
+                            <MudButton Size="Size.Small" OnClick="MarkAllRead">
+                                @AppLocalization[Lang.Mark_all_read]
+                            </MudButton>
+                        }
+                    </MudStack>
+                }
+            </MudContainer>
+        </ChildContent>
+    </MudMenu>
+}
+else
+{
+
+    <AppTooltip Text=@("AD Manager "+AppLocalization[Lang.News])>
+        <AppIconButton Size="Size.Large"
+                       Disabled="true"
+                       Icon="@Icons.Material.TwoTone.NewReleases"
+                       Color=@Color.Success />
+    </AppTooltip>
+
+}
+
+@code {
+    private bool showRead;
+    private List<NewsItem> unreadItems = new();
+    private List<NewsItem> readItems = new();
+    private MudMenu? newsMenu;
+    private NewsItem? appUpdateNewsItem
+    {
+        get
+        {
+            if (!AutoUpdateService.IsUpdateAvailable || UpdateService.NewestAvailableUpdate == null)
+            {
+                return null;
+            }
+            return new NewsItem
+                {
+                    Title = AppLocalization[Lang.Update_Available],
+                    Body = AppLocalization[Lang.Version] + " " + UpdateService.NewestAvailableUpdate?.Version +
+                                    "<br/> ",
+                    Link = "/settings/update",
+                    Published = true,
+                    UpdatedAt = DateTime.MinValue,
+                    CreatedAt = DateTime.MinValue,
+                    Id = ulong.Parse(UpdateService.NewestAvailableUpdate.Version.ToString().Replace(".", ""))
+                };
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        ApplicationNewsService.OnNewItemsAvailable.Delegate += RefreshItems;
+        CurrentUser.State.OnReadNewsSaved.Delegate += RefreshItems;
+        RefreshItems();
+
+
+    }
+    public override void Dispose()
+    {
+        base.Dispose();
+        if(ApplicationNewsService.OnNewItemsAvailable != null){
+            ApplicationNewsService.OnNewItemsAvailable.Delegate -= RefreshItems;
+        }
+        if (CurrentUser.State.OnReadNewsSaved != null)
+        {
+            CurrentUser.State.OnReadNewsSaved.Delegate -= RefreshItems;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        //Auto-open news when there are unread items
+        if (firstRender && unreadItems.Count > 0)
+        {
+            newsMenu?.OpenMenuAsync(new());
+        }
+    }
+    private async Task ShowNews(NewsItem newItem)
+    {
+        if (newsMenu != null)
+        {
+            await newsMenu.CloseAllMenusAsync();
+        }
+        var result = await newItem.ShowNewsItemDialog(MessageService);
+        if (result.Dialog is AppNewsItemDialog dialog)
+        {
+            dialog.OnAcknowledged += () => RefreshItems();
+        }
+
+
+    }
+    private async void MarkAllRead()
+    {
+        foreach (var newsItem in unreadItems)
+        {
+            try
+            {
+                CurrentUser.State.ReadNewsItems?.Add(new ReadNewsItem { NewsItemId = newsItem.Id, NewsItemUpdatedAt = newsItem.UpdatedAt, User = CurrentUser.State.Preferences });
+            }
+            catch
+            {
+
+            }
+        }
+        await CurrentUser.State.SaveReadNewsItems();
+        RefreshItems();
+
+    }
+    private void RefreshItems(object? state = null,EventArgs? args=null)
+    {
+        LoadingData = true;
+        RefreshUnreadItems();
+        RefreshReadItems();
+        if (!ApplicationInfo.InDebugMode)
+        {
+            readItems.RemoveAll(x => x.DevOnly);
+            unreadItems.RemoveAll(x => x.DevOnly);
+
+        }
+        LoadingData = false;
+
+    }
+    private void RefreshUnreadItems()
+    {
+        unreadItems = ApplicationNewsService.GetUnreadNewsItems(CurrentUser.State);
+        if (AutoUpdateService.IsUpdateAvailable 
+            && appUpdateNewsItem != null
+            && !CurrentUser.State.ReadNewsItems?.Any(x => x.NewsItemId == appUpdateNewsItem.Id) == true)
+        {
+
+            unreadItems.Insert(0, appUpdateNewsItem);
+            
+        }
+    }
+
+    private void RefreshReadItems()
+    {
+        readItems = ApplicationNewsService.GetReadNewsItems(CurrentUser.State);
+
+        if (appUpdateNewsItem != null && CurrentUser.State.ReadNewsItems?.Any(x => x.NewsItemId == appUpdateNewsItem.Id) == true)
+        {
+            readItems.Insert(0, appUpdateNewsItem);
+        }
+    }
+
+}

@@ -11,4 +11,4 @@
 
 ## Reporting a Vulnerability
 
-Please report security vulnerability issues by email to support@blazam.org
+Please report security vulnerability issues by email to support@admanager.org

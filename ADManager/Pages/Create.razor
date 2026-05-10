@@ -1,0 +1,26 @@
+﻿@page "/create/{type}"
+@using ADManager.Global.Data
+@using ADManager.Gui.UI.Groups
+@using ADManager.Gui.UI.OU
+@using ADManager.Gui.UI.Users
+@attribute [Authorize(Roles = UserRoles.CreateUsers + "," + UserRoles.CreateGroups + "," + UserRoles.CreateOUs)]
+@switch (type?.ToLower())
+{
+    case "user":
+        <CreateUser />
+        break;
+    case "contact":
+        <CreateContact />
+        break;
+    case "group":
+        <CreateGroup />
+        break;
+    case "ou":
+        <CreateOU />
+        break;
+
+}
+@code {
+    [Parameter]
+    public string? type { get; set; }
+}

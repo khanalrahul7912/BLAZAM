@@ -1,0 +1,52 @@
+﻿using ADManager.Database.Models.Notifications;
+using ADManager.Logger; // Added
+
+namespace ADManager.Notifications.Notifications
+{
+    /// <summary>
+    /// Provides extension methods for the <see cref="ADManager.Database.Models.Notifications.NotificationType"/> enum.
+    /// </summary>
+    public static class NotificationTypeExtentions
+    {
+        /// <summary>
+        /// Converts a <see cref="ADManager.Database.Models.Notifications.NotificationType"/> enum to its corresponding notification template component.
+        /// </summary>
+        /// <typeparam name="T">The expected base type of the notification component (should be <see cref="ADManager.EmailMessage.Email.Base.EmailNotificationTemplateComponent"/> or a class derived from it).</typeparam>
+        /// <param name="type">The notification type to convert.</param>
+        /// <returns>An instance of the corresponding notification component cast to type T, or default(T) if no mapping exists for the given type or if an error occurs.</returns>
+        public static T? ToNotification<T>(this NotificationType type) where T : EmailNotificationTemplateComponent
+        {
+            EmailNotificationTemplateComponent? notificationTemplate = null;
+            switch (type)
+            {
+                case NotificationType.PasswordChange:
+                    notificationTemplate = new PasswordChangedEmailMessage();
+                    break;
+                case NotificationType.Create:
+                    notificationTemplate = new EntryCreatedEmailMessage();
+                    break;
+                case NotificationType.Delete:
+                    notificationTemplate = new EntryDeletedEmailMessage();
+                    break;
+                case NotificationType.Modify:
+                    notificationTemplate = new EntryEditedEmailMessage();
+                    break;
+                case NotificationType.Unassign:
+                    notificationTemplate = new EntryUnassignedEmailMessage();
+                    break;
+                case NotificationType.Assign:
+                    notificationTemplate = new EntryAssignedEmailMessage();
+                    break;
+                case NotificationType.LockedOut:
+                    notificationTemplate = new LockedOutEmailMessage();
+                    break;
+                default: // Added default case
+                    Loggers.SystemLogger.Warning("NotificationTypeExtentions.ToNotification: Unknown or unhandled NotificationType '{Type}' encountered. Returning default(T).", type);
+                    return default; // Return default(T) directly from here
+            }
+
+            return (T?)notificationTemplate;
+
+        }
+    }
+}

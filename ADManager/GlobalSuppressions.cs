@@ -1,0 +1,10 @@
+﻿// This file is used by Code Analysis to maintain SuppressMessage
+// attributes that are applied to this project.
+// Project-level suppressions either have no target or are given
+// a specific target and scoped to a namespace, type, member, etc.
+
+using System.Diagnostics.CodeAnalysis;
+
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:ADManager.Server.ProgramHelpers.GetInstallationId~System.Guid")]
+[assembly: SuppressMessage("Critical Vulnerability", "S4830:Server certificates should be verified during SSL/TLS connections", Justification = "<Pending>", Scope = "member", Target = "~M:ADManager.Server.ProgramHelpers.InjectServices(Microsoft.AspNetCore.Builder.WebApplicationBuilder)~Microsoft.AspNetCore.Builder.WebApplicationBuilder")]
+[assembly: SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>", Scope = "member", Target = "~M:ADManager.ProgramHelpers.GetInstallationId~System.Guid")]

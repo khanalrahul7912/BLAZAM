@@ -17,14 +17,14 @@ variables:
 
 steps:
 - checkout: self
-- checkout: git://ADAM/blazam.org
+- checkout: git://ADAM/admanager.org
   
 - script: dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
   displayName: 'dotnet build $(buildConfiguration)'
 
 - task: AssemblyVersionLoader@1
   inputs:
-    sourceFileName: '$(Build.ArtifactStagingDirectory)/BLAZAM.dll'
+    sourceFileName: '$(Build.ArtifactStagingDirectory)/ADManager.dll'
 
 - task: PowerShell@2
   displayName:  Build Number
@@ -51,4 +51,4 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: '_BLAZAM'
+    ArtifactName: '_ADManager'

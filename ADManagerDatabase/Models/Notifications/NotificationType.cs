@@ -1,0 +1,15 @@
+﻿namespace ADManager.Database.Models.Notifications
+{
+    public enum NotificationType
+    {
+        Create,
+        Delete,
+        Modify,
+        Unassign,
+        Assign,
+        PasswordChange,
+        LockedOut,
+        Scheduled
+    }
+
+}

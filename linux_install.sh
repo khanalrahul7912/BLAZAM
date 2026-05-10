@@ -1,9 +1,9 @@
 #!/bin/bash
 # ==============================================================================
 #
-# Blazam Installation & Configuration Script
+# AD Manager Installation & Configuration Script
 #
-# This script installs Blazam, a web application, and configures it to run as
+# This script installs AD Manager, a web application, and configures it to run as
 # a systemd service with a reverse proxy (user's choice of Nginx or Apache).
 #
 # It also includes an optional feature to send the installation script's
@@ -15,28 +15,28 @@
 set -e
 
 # --- Configuration ---
-readonly BLAZAM_RELEASE_TAG="BetaDev1"
+readonly ADManager_RELEASE_TAG="BetaDev1"
 
 
 # System and application settings
-readonly INSTALL_DIR="/opt/blazam"
-readonly DATA_DIR="/var/lib/blazam"
-readonly APP_USER="blazamuser"
-readonly SERVICE_NAME="blazam"
+readonly INSTALL_DIR="/opt/admanager"
+readonly DATA_DIR="/var/lib/admanager"
+readonly APP_USER="admanageruser"
+readonly SERVICE_NAME="admanager"
 readonly DOTNET_EXECUTABLE="/usr/bin/dotnet"
 
 # Network and Proxy settings
-readonly BLAZAM_INTERNAL_PORT="5000"
-readonly BLAZAM_INTERNAL_HTTPS_PORT="5001"
-readonly SSL_CERT_PATH="/etc/ssl/certs/blazam-selfsigned.crt"
-readonly SSL_KEY_PATH="/etc/ssl/private/blazam-selfsigned.key"
+readonly ADManager_INTERNAL_PORT="5000"
+readonly ADManager_INTERNAL_HTTPS_PORT="5001"
+readonly SSL_CERT_PATH="/etc/ssl/certs/admanager-selfsigned.crt"
+readonly SSL_KEY_PATH="/etc/ssl/private/admanager-selfsigned.key"
 
 
 # --- Seq Logging Configuration ---
 # Set ENABLE_SEQ_LOGGING to "true" to send this script's logs to a Seq server.
 readonly ENABLE_SEQ_LOGGING="false"
-readonly SEQ_SERVER_URL="http://logs.blazam.org:5341" # e.g., http://seq.example.com:5341
-readonly SEQ_API_KEY="ZwXWKRu2lMrJ9qHaFTzx" # Optional: Your Seq Ingestion API Key
+readonly SEQ_SERVER_URL="" # e.g., http://seq.example.com:5341
+readonly SEQ_API_KEY="" # Optional: Your Seq Ingestion API Key
 
 # --- Global Variables ---
 DOMAIN_NAME=""
@@ -44,7 +44,7 @@ DB_TYPE=""
 DB_CONN_STR=""
 WEB_SERVER_CHOICE=""
 DOWNLOAD_URL=""
-BLAZAM_ZIP_FILENAME=""
+ADManager_ZIP_FILENAME=""
 
 # --- Helper Functions ---
 
@@ -116,10 +116,10 @@ log_error() {
 
 # NEW FUNCTION: Get the download URL from the GitHub release tag.
 get_release_url() {
-    log_info "Querying GitHub for the download URL for tag '${BLAZAM_RELEASE_TAG}'..."
+    log_info "Querying GitHub for the download URL for tag '${ADManager_RELEASE_TAG}'..."
     
     # Construct the API URL
-    local api_url="https://api.github.com/repos/Blazam-App/BLAZAM/releases/tags/${BLAZAM_RELEASE_TAG}"
+    local api_url="https://api.github.com/repos/khanalrahul7912/BLAZAM/releases/tags/${ADManager_RELEASE_TAG}"
     
     # Fetch release data from the GitHub API
     local release_data
@@ -129,7 +129,7 @@ get_release_url() {
     if echo "$release_data" | jq -e 'has("message")' > /dev/null; then
         local error_msg
         error_msg=$(echo "$release_data" | jq -r '.message')
-        log_error "GitHub API error for tag '${BLAZAM_RELEASE_TAG}': ${error_msg}"
+        log_error "GitHub API error for tag '${ADManager_RELEASE_TAG}': ${error_msg}"
     fi
     
     # Use jq to extract the download URL for the .zip asset
@@ -137,13 +137,13 @@ get_release_url() {
     
     # Validate that we found a URL
     if [[ -z "${DOWNLOAD_URL}" || "${DOWNLOAD_URL}" == "null" ]]; then
-        log_error "Could not find a .zip file in the release assets for tag '${BLAZAM_RELEASE_TAG}'."
+        log_error "Could not find a .zip file in the release assets for tag '${ADManager_RELEASE_TAG}'."
     fi
 
     # Extract the filename from the URL
-    BLAZAM_ZIP_FILENAME=$(basename "${DOWNLOAD_URL}")
+    ADManager_ZIP_FILENAME=$(basename "${DOWNLOAD_URL}")
     
-    log_info "Found release asset: ${BLAZAM_ZIP_FILENAME}"
+    log_info "Found release asset: ${ADManager_ZIP_FILENAME}"
 }
 
 # 1. Run pre-flight checks to ensure the script can execute.
@@ -166,7 +166,7 @@ get_user_input() {
     log_info "Gathering user input..."
 
     # Prompt for Domain Name
-    read -r -p "Enter the domain name or IP for Blazam (e.g., blazam.example.com): " DOMAIN_NAME
+    read -r -p "Enter the domain name or IP for AD Manager (e.g., admanager.example.com): " DOMAIN_NAME
     if [ -z "${DOMAIN_NAME}" ]; then
         log_warn "No domain name entered. Defaulting to 'localhost'."
         DOMAIN_NAME="localhost"
@@ -195,7 +195,7 @@ get_user_input() {
     done
 }
 
-# 3. Install system dependencies required for Blazam and the chosen web server.
+# 3. Install system dependencies required for AD Manager and the chosen web server.
 install_dependencies() {
     log_info "Updating package lists and installing dependencies..."
     apt-get update
@@ -241,23 +241,23 @@ setup_user_and_dirs() {
     log_info "Created directories: ${INSTALL_DIR} and ${DATA_DIR}"
 }
 
-# 6. Download and extract the Blazam application files.
-download_and_install_blazam() {
-    log_info "Downloading Blazam from ${DOWNLOAD_URL}..."
+# 6. Download and extract the AD Manager application files.
+download_and_install_admanager() {
+    log_info "Downloading AD Manager from ${DOWNLOAD_URL}..."
     cd /tmp
-    wget -q -O "${BLAZAM_ZIP_FILENAME}" "${DOWNLOAD_URL}"
-    log_info "Extracting Blazam to ${INSTALL_DIR}..."
-    unzip -oq "${BLAZAM_ZIP_FILENAME}" -d "${INSTALL_DIR}"
+    wget -q -O "${ADManager_ZIP_FILENAME}" "${DOWNLOAD_URL}"
+    log_info "Extracting AD Manager to ${INSTALL_DIR}..."
+    unzip -oq "${ADManager_ZIP_FILENAME}" -d "${INSTALL_DIR}"
     log_info "Extraction complete."
 }
 
 # 7. Interactively configure the database connection.
 configure_database() {
-    log_info "Please select the database type Blazam will use."
+    log_info "Please select the database type AD Manager will use."
     PS3="Enter the number for your choice: "
     select choice in "SQLite" "Microsoft SQL Server" "MySQL / MariaDB"; do
         case $choice in
-            "SQLite") DB_TYPE="Sqlite"; DB_CONN_STR="Data Source=${DATA_DIR}/Blazam.db"; break;;
+            "SQLite") DB_TYPE="Sqlite"; DB_CONN_STR="Data Source=${DATA_DIR}/AD Manager.db"; break;;
             "Microsoft SQL Server")
                 DB_TYPE="SqlServer"
                 read -r -p "Enter Server address/IP: " DB_SERVER
@@ -280,8 +280,8 @@ configure_database() {
 }
 
 # 8. Configure the appsettings.json file.
-configure_blazam_appsettings() {
-    log_info "Configuring Blazam application settings..."
+configure_admanager_appsettings() {
+    log_info "Configuring AD Manager application settings..."
     configure_database
     local appsettings_path="${INSTALL_DIR}/appsettings.json"
     local appsettings_example_path="${INSTALL_DIR}/appsettings.example.json"
@@ -293,8 +293,8 @@ configure_blazam_appsettings() {
     # Use jq to modify the JSON file, converting port strings to numbers
     jq \
       --arg key "$encryption_key" \
-      --arg httpport "$BLAZAM_INTERNAL_PORT" \
-      --arg httpsport "$BLAZAM_INTERNAL_HTTPS_PORT" \
+      --arg httpport "$ADManager_INTERNAL_PORT" \
+      --arg httpsport "$ADManager_INTERNAL_HTTPS_PORT" \
       --arg dbtype "$DB_TYPE" \
       --arg connstr "$DB_CONN_STR" \
       '.EncryptionKey = $key |
@@ -320,16 +320,16 @@ set_permissions() {
     log_info "Permissions set."
 }
 
-# 10. Create and enable the systemd service for Blazam.
+# 10. Create and enable the systemd service for AD Manager.
 setup_systemd_service() {
     log_info "Creating and starting systemd service..."
     cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOL
 [Unit]
-Description=Blazam Web Application
+Description=AD Manager Web Application
 After=network.target
 [Service]
 WorkingDirectory=${INSTALL_DIR}
-ExecStart=${DOTNET_EXECUTABLE} ${INSTALL_DIR}/BLAZAM.dll --urls="http://localhost:${BLAZAM_INTERNAL_PORT}"
+ExecStart=${DOTNET_EXECUTABLE} ${INSTALL_DIR}/ADManager.dll --urls="http://localhost:${ADManager_INTERNAL_PORT}"
 Restart=always
 RestartSec=10
 KillSignal=SIGINT
@@ -347,9 +347,9 @@ EOL
     systemctl start "${SERVICE_NAME}.service"
     sleep 5
     if ! systemctl is-active --quiet "${SERVICE_NAME}"; then
-        log_warn "Blazam service may have failed. Check logs: journalctl -u ${SERVICE_NAME}"
+        log_warn "AD Manager service may have failed. Check logs: journalctl -u ${SERVICE_NAME}"
     else
-        log_info "Blazam service started successfully."
+        log_info "AD Manager service started successfully."
     fi
 }
 
@@ -368,7 +368,7 @@ generate_ssl_cert() {
 # 12a. Configure Nginx as a reverse proxy.
 setup_nginx_reverse_proxy() {
     log_info "Configuring Nginx reverse proxy..."
-    local nginx_config_file="/etc/nginx/sites-available/blazam"
+    local nginx_config_file="/etc/nginx/sites-available/admanager"
     rm -f /etc/nginx/sites-enabled/default
     cat > "${nginx_config_file}" <<EOL
 server {
@@ -383,7 +383,7 @@ server {
     ssl_certificate_key ${SSL_KEY_PATH};
     ssl_protocols TLSv1.2 TLSv1.3;
     location / {
-        proxy_pass http://localhost:${BLAZAM_INTERNAL_PORT};
+        proxy_pass http://localhost:${ADManager_INTERNAL_PORT};
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection \$connection_upgrade;
@@ -397,7 +397,7 @@ EOL
     if ! grep -q "map \$http_upgrade \$connection_upgrade" "/etc/nginx/nginx.conf"; then
         sed -i "/http {/a \    map \$http_upgrade \$connection_upgrade {\n        default upgrade;\n        ''      close;\n    }" "/etc/nginx/nginx.conf"
     fi
-    ln -sf "${nginx_config_file}" "/etc/nginx/sites-enabled/blazam"
+    ln -sf "${nginx_config_file}" "/etc/nginx/sites-enabled/admanager"
     if nginx -t; then
         log_info "Nginx configuration OK. Restarting Nginx..."
         systemctl restart nginx
@@ -409,7 +409,7 @@ EOL
 # 12b. Configure Apache as a reverse proxy.
 setup_apache_reverse_proxy() {
     log_info "Configuring Apache reverse proxy..."
-    local apache_config_file="/etc/apache2/sites-available/blazam.conf"
+    local apache_config_file="/etc/apache2/sites-available/admanager.conf"
     rm -f /etc/apache2/sites-enabled/000-default.conf
     cat > "${apache_config_file}" <<EOL
 <VirtualHost *:80>
@@ -427,21 +427,21 @@ setup_apache_reverse_proxy() {
 
     # Proxy Configuration
     ProxyPreserveHost On
-    ProxyPass / http://127.0.0.1:${BLAZAM_INTERNAL_PORT}/
-    ProxyPassReverse / http://127.0.0.1:${BLAZAM_INTERNAL_PORT}/
+    ProxyPass / http://127.0.0.1:${ADManager_INTERNAL_PORT}/
+    ProxyPassReverse / http://127.0.0.1:${ADManager_INTERNAL_PORT}/
     
     # Required for SignalR WebSockets
     RewriteEngine on
     RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC]
     RewriteCond %{HTTP:CONNECTION} Upgrade$ [NC]
-    RewriteRule /(.*) ws://127.0.0.1:${BLAZAM_INTERNAL_PORT}/\$1 [P,L]
+    RewriteRule /(.*) ws://127.0.0.1:${ADManager_INTERNAL_PORT}/\$1 [P,L]
 
     RequestHeader set "X-Forwarded-Proto" "https"
 </VirtualHost>
 EOL
     log_info "Enabling required Apache modules..."
     a2enmod proxy proxy_http ssl headers rewrite
-    a2ensite blazam.conf
+    a2ensite admanager.conf
     
     if apache2ctl configtest; then
         log_info "Apache configuration OK. Restarting Apache..."
@@ -478,7 +478,7 @@ configure_firewall() {
 # 14. Clean up temporary installation files.
 cleanup() {
     log_info "Cleaning up downloaded files..."
-    rm -f "/tmp/${BLAZAM_ZIP_FILENAME}"
+    rm -f "/tmp/${ADManager_ZIP_FILENAME}"
 }
 
 # 15. Print a final summary with next steps.
@@ -494,13 +494,13 @@ print_summary() {
     fi
 
     log_info "--------------------------------------------------------------------"
-    log_info "Blazam installation with ${WEB_SERVER_CHOICE} reverse proxy completed!"
-    log_info "Blazam should be accessible at: https://${DOMAIN_NAME}"
+    log_info "AD Manager installation with ${WEB_SERVER_CHOICE} reverse proxy completed!"
+    log_info "AD Manager should be accessible at: https://${DOMAIN_NAME}"
     log_warn "You will see a browser warning due to the self-signed SSL certificate."
     log_info ""
     log_info "Next Steps:"
-    log_info " > Check Blazam service:   systemctl status ${SERVICE_NAME}"
-    log_info " > View Blazam logs:       journalctl -u ${SERVICE_NAME} -f"
+    log_info " > Check AD Manager service:   systemctl status ${SERVICE_NAME}"
+    log_info " > View AD Manager logs:       journalctl -u ${SERVICE_NAME} -f"
     log_info " > View ${WEB_SERVER_CHOICE} logs:     ${log_path}"
     log_info " > For production, get a valid SSL certificate with: ${certbot_command}"
     log_info "--------------------------------------------------------------------"
@@ -509,15 +509,15 @@ print_summary() {
 # --- Script Execution ---
 
 main() {
-    log_info "Starting Blazam installation script."
+    log_info "Starting AD Manager installation script."
     pre_flight_checks
     get_release_url
     get_user_input
     install_dependencies
     fix_ldap_symlink
     setup_user_and_dirs
-    download_and_install_blazam
-    configure_blazam_appsettings
+    download_and_install_admanager
+    configure_admanager_appsettings
     set_permissions
     setup_systemd_service
     
@@ -531,7 +531,7 @@ main() {
     configure_firewall
     cleanup
     print_summary
-    log_info "Blazam installation script finished successfully."
+    log_info "AD Manager installation script finished successfully."
     exit 0
 }
 

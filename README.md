@@ -1,97 +1,248 @@
-# BLAZAM
-[![Downloads](https://img.shields.io/github/downloads/Blazam-App/BLAZAM/total)](https://img.shields.io/github/downloads/Blazam-App/BLAZAM/total)
-[![Release Date](https://img.shields.io/github/release-date/Blazam-App/BLAZAM)](https://img.shields.io/github/release-date/Blazam-App/BLAZAM)
-[![Build](https://img.shields.io/github/actions/workflow/status/Blazam-App/BLAZAM/release-stable.yml)](https://img.shields.io/github/actions/workflow/status/Blazam-App/BLAZAM/release-stable.yml)
-[![Last Commit](https://img.shields.io/github/last-commit/Blazam-App/Blazam/v1-Dev)](https://img.shields.io/github/last-commit/Blazam-App/Blazam/v1-Stable)
-[![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
+# AD Manager
 
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Blazam-App_BLAZAM&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Blazam-App_BLAZAM)
+AD Manager is your forked and rebranded Active Directory management platform for Active Directory administration.
+It provides web-based AD administration, delegated permissions, automation rules, auditing, and integrations.
 
-## Screenshots
-![image](https://github.com/user-attachments/assets/fe56c0b7-f3b9-4a91-8dc1-7b74ea0f67ac)
-![image](https://github.com/user-attachments/assets/cfa35e1f-facb-4c64-8ad4-1a48de5f4a82)
+## Status of this fork
 
+- Branding updated to **AD Manager**
+- Upstream-specific URL endpoints removed from user-facing paths
+- Production-focused deployment guidance included below
 
-## Who is it for?
-* Overworked system administrators: Blazam simplifies and automates many routine AD management tasks, freeing up your time for more critical projects.
-* Organizations with limited IT budgets: Blazam is a free and open-source solution that provides powerful features without the high costs of commercial software.
-* IT professionals seeking improved delegation: Blazam's flexible permission system allows you to grant granular control over specific AD objects and actions to individual users or groups.
-* Anyone needing remote AD management: Access Blazam's intuitive web interface from any device with a browser, allowing you to manage your directory from anywhere.
+## Technology stack
 
-## What does Blazam offer?
-* Comprehensive AD Management: Perform essential tasks such as:
-  * User, group, computer, and printer management (enable/disable, unlock, assign to groups, move, rename, create, delete).
-  * Password resets, account unlocks, and group management.
-  * Modifying any Active Directory attribute.
-* Delegation and Control:
-  * Define reusable "Access Levels" with specific permissions for different AD object types.
-  * Apply these Access Levels to groups or individual users, controlling their access to specific OUs and objects within those OUs.
-  * Impersonate users to test and verify permissions
-* Automation Engine:
-  * Rule-Based Automation: Define rules to automate AD tasks based on specific triggers and conditions.
-  * Event Triggers: Initiate automation rules based on directory entry changes (e.g., creation, modification, deletion of users, groups, computers).
-  * Scheduled Triggers: Configure rules to run at predefined times or intervals.
-  * Advanced Filtering: Target specific AD objects for automation using detailed filters, including OU, object type, and attribute values (e.g., account enabled/disabled status).
-  * Automated Actions: Perform actions such as:
-    * Assigning or unassigning users/computers from groups.
-    * Enabling or disabling accounts.
-    * Unlocking or locking out accounts.
-    * Moving AD objects between OUs.
-    * Modifying specific Active Directory attributes.
-  * Rule Prioritization: Control the order of rule execution.
-  * Conditional Processing: Stop further rule processing if a specific rule's conditions are met and actions are performed.
-* User Creation and Management:
-  * Configure user creation templates to streamline onboarding and ensure data consistency.
-  * Manage user thumbnail photos.
-* Auditing and Security:
-  * Comprehensive audit logs track all user actions within Blazam.
-  * Secure your installation with optional two-factor authentication using Cisco DUO.
-* External Integrations
-  * REST API: Integrate Blazam with your existing IT tools and automate tasks.
-  * Webhooks: Receive real-time notifications about events in Blazam.
-* Additional Features:
-  * Access Active Directory's recycle bin to restore deleted objects.
-  * Real-time computer monitoring (CPU, memory usage, session list, service state, drive details).
-  * Automatic updates to keep your installation current.
-  
-## Why is Blazam a valuable tool?
-* Enable non-technical users: Delegate tasks like password resets or group assignments to help desk staff or other non-IT personnel, freeing up your team for more specialized work.
-* Improve IT efficiency: Streamline your AD management workflow with Blazam's user-friendly interface and powerful features.
-* Go beyond Microsoft's GUI: Blazam offers features that go beyond the capabilities of standard AD management tools, such as copying group memberships or managing user photos from the web.
-* Mobile accessibility: Manage your Active Directory from anywhere using your phone or tablet.
-* Open source and free: Blazam is community-driven and transparent, with no licensing costs.
+- **Backend/UI runtime:** ASP.NET Core (.NET 8), Blazor Server, MudBlazor
+- **Database:** SQLite (default) or SQL Server / MySQL / MariaDB
+- **Hosting:** Linux or Windows, typically behind Nginx/Apache/IIS reverse proxy
 
-## Visit the Main Website
-[https://blazam.org](https://blazam.org)
+> Note: This repository is not a Python codebase today. A full Python rewrite is a separate migration project and should be done in phases (see “Python migration path” below).
 
-## Try the Live Demo
-[Windows Hosted Demo](https://blazam.org/demo)
+---
 
- [Linux Hosted Demo](https://blazam.org/demo)
+## Install and host on Linux (production)
 
-## View the Documentation
-[https://docs.blazam.org](https://docs.blazam.org)
+### 1) Prerequisites
 
-## Ready to Install?
-Blazam's Web Installer is the recommended installation method.
+- Ubuntu 22.04+ / Debian 12+
+- .NET 8 runtime (`dotnet-runtime-8.0`)
+- Nginx
+- TLS certificate (Let's Encrypt recommended)
 
-[Web Installer](https://blazam.org/download)
+### 2) Install runtime and tools
 
-[Manual Installation](https://docs.blazam.org/install/manual)
+```bash
+wget https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+sudo apt-get update
+sudo apt-get install -y dotnet-runtime-8.0 nginx unzip
+```
 
-## Remarks
-We have users in Ukraine... we support Ukraine in the current conflict with Russia. Slava Ukraine!
+### 3) Deploy app
 
-## Star History
-If you like the project, please give it a star! It helps with visibility and motivates us to keep improving it.
-[![Star History Chart](https://api.star-history.com/svg?repos=Blazam-App/BLAZAM&type=date&legend=top-left)](https://www.star-history.com/#Blazam-App/BLAZAM&type=date&legend=top-left)
+```bash
+sudo mkdir -p /opt/ad-management
+sudo mkdir -p /var/lib/ad-management
+sudo useradd -r -s /usr/sbin/nologin admanagement || true
+sudo chown -R admanagement:admanagement /opt/ad-management /var/lib/ad-management
+```
 
-## Get Paid to Contribute
-If you are interested in contributing to Blazam and receiving compensation for your work, please reach out
-to admin@blazam.org with your proposal of work and a flat rate. Simple contributions such as bug fixes or small features
-will not be considered. Only larger features that work on muliple components or significant contributions will be considered.
+Publish from source (on a build host), then copy the published output to `/opt/ad-management` on the target server:
+
+```bash
+dotnet publish ADManager/ADManager.csproj -c Release -o /opt/ad-management
+```
+
+> If your local folder layout differs, update the `.csproj` path accordingly.
+
+### 4) Configure systemd service
+
+Create `/etc/systemd/system/ad-management.service`:
+
+```ini
+[Unit]
+Description=AD Manager
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/ad-management
+ExecStart=/usr/bin/dotnet /opt/ad-management/ADManager.dll
+Restart=always
+RestartSec=5
+User=admanagement
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+> The executable is now `ADManager.dll` to match the renamed project and assembly output.
+
+Enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now ad-management
+sudo systemctl status ad-management
+```
+
+### 5) Configure Nginx reverse proxy
+
+Create `/etc/nginx/sites-available/ad-management`:
+
+```nginx
+server {
+    listen 80;
+    server_name YOUR_DOMAIN;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable site:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/ad-management /etc/nginx/sites-enabled/ad-management
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 6) Enable HTTPS
+
+```bash
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d YOUR_DOMAIN
+```
+
+### 7) Optional centralized Seq logging
+
+Add optional Seq settings in your `appsettings.Production.json`:
+
+```json
+{
+  "Logging": {
+    "Seq": {
+      "Url": "http://your-seq-server:5341",
+      "ApiKey": "your-seq-ingestion-api-key"
+    }
+  }
+}
+```
+
+---
+
+## Install and host on Windows (production)
+
+### 1) Prerequisites
+
+- Windows Server 2019/2022 or Windows 11
+- .NET 8 Hosting Bundle
+- IIS with ASP.NET Core Hosting enabled
+- TLS certificate for your server hostname
+
+### 2) Install prerequisites
+
+1. Install the **.NET 8 Hosting Bundle** from Microsoft.
+2. In **Server Manager** enable:
+   - Web Server (IIS)
+   - ASP.NET 4.x
+   - WebSocket Protocol
+   - Management Tools
+3. Create a local or domain service account for the application pool identity.
+
+### 3) Publish the application
+
+Run on a build machine or on the server from the repository root:
+
+```powershell
+dotnet publish ADManager/ADManager.csproj -c Release -o C:\inetpub\ad-manager
+```
+
+### 4) Create the IIS site
+
+1. Open **IIS Manager**.
+2. Create a new **Application Pool** named `ADManagerPool` using **No Managed Code**.
+3. Set the pool identity to the service account created for the app.
+4. Create a new site named `AD Manager` pointing to `C:\inetpub\ad-manager`.
+5. Bind the site to `https` with your TLS certificate.
+
+### 5) File system and app settings
+
+- Grant the app pool identity read/write access to the application writable directories.
+- Set `ASPNETCORE_ENVIRONMENT=Production`.
+- Store secrets outside source control using environment variables or secured configuration transforms.
+
+### 6) Run as a Windows Service (optional)
+
+If you prefer a service instead of IIS, publish to a target directory and register `ADManager.dll` with a service wrapper such as `sc.exe` or NSSM, then place a reverse proxy in front of it if needed.
+
+---
+
+## Production-readiness checklist
+
+- [ ] Run with `ASPNETCORE_ENVIRONMENT=Production`
+- [ ] Use HTTPS only (redirect HTTP to HTTPS)
+- [ ] Store secrets outside source control (environment variables or secret manager)
+- [ ] Configure DB backups and restore test schedule
+- [ ] Restrict firewall to 80/443 and management ports only
+- [ ] Enable structured logs and central log shipping endpoint (optional)
+- [ ] Rotate credentials/API tokens periodically
+- [ ] Keep server patches and .NET runtime up to date
+- [ ] Verify AD least-privilege service account rights
+- [ ] Enable monitoring/alerts for app availability and error rate
+
+---
+
+## Keep receiving upstream features without losing your custom changes
+
+Use a **two-branch strategy**:
+
+- `main` → tracks upstream updates
+- `custom/ad-management` → your custom branding and local changes
+
+### One-time setup
+
+```bash
+git remote add upstream https://github.com/Blazam-App/BLAZAM.git
+git fetch upstream
+```
+
+### Update workflow
+
+```bash
+# Update your local mirror branch
+git checkout main
+git fetch upstream
+git merge --ff-only upstream/main
+
+# Rebase your customization branch on top of fresh main
+git checkout custom/ad-management
+git rebase main
+
+# Push updated customization branch
+git push origin custom/ad-management --force-with-lease
+```
+
+This keeps your custom files isolated and makes conflict resolution predictable on each upstream release.
+
+---
+
+## Python migration path (if you still want full Python)
+
+A safe full migration should be handled in phases:
+
+1. Freeze current feature scope and API contracts
+2. Build a Python backend (FastAPI/Django) with matching endpoints
+3. Migrate data layer and auth flows
+4. Replace UI incrementally (or keep existing UI against new APIs)
+5. Run side-by-side validation and cut over gradually
+
+If you want, the next task can scaffold a real Python service in this repo (`/python_backend`) and begin endpoint-by-endpoint migration.

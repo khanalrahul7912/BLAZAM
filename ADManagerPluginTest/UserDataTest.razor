@@ -1,0 +1,19 @@
+﻿@using ADManager.ActiveDirectory.Interfaces
+@using ADManager.Gui
+@using ADManager.Gui.UI
+@using ADManager.Notifications.Services
+
+@using ADManager.Plugins
+@inherits PluginDirectoryModelComponentElement
+@attribute [PluginComponent(PageType.User,PageLocation.Account)]
+
+<MudText>
+    Test Plugin Account Information
+</MudText>
+<MudButton OnClick="TestSnackBar">Test Button</MudButton>
+@code {
+    private void TestSnackBar()
+    {
+        SnackBarService.Success("Plugin Toast Notification in "+Account.DisplayName);
+    }
+}

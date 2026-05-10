@@ -1,6 +1,6 @@
 # .github/ISSUE_TEMPLATE/bug_report.yml
 name: Bug Report
-description: Report a bug in Blazam to help us improve.
+description: Report a bug in AD Manager to help us improve.
 type: "Bug"
 labels: ["bug"]
 assignees:
@@ -38,17 +38,17 @@ body:
       value: "### Environment"
 
   - type: input
-    id: blazam-version
+    id: admanager-version
     attributes:
-      label: Blazam Version
+      label: AD Manager Version
       description: |
-       **What version of Blazam are you running?**
+       **What version of AD Manager are you running?**
 
        To find your version:
-       - Click the **"Blazam"** branding text at the bottom of the side panel to open the About screen.
+       - Click the **"AD Manager"** branding text at the bottom of the side panel to open the About screen.
        - The version number will be displayed there.
        
-       ![Blazam Branding Location](https://raw.githubusercontent.com/Blazam-App/BLAZAM/refs/heads/v1-Dev/.github/img/versionHelp.png)
+       ![AD Manager Branding Location](https://raw.githubusercontent.com/khanalrahul7912/BLAZAM/refs/heads/copilot/add-dynamic-access-ou/.github/img/versionHelp.png)
       placeholder: "e.g., 1.4.7.2025.09.10.0026"
     validations:
       required: true

@@ -1,0 +1,57 @@
+﻿using ADManager.Common.Data.Validators;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ADManager.Database.Models
+{
+    public enum DuoUnreachableBehavior
+    {
+        Block,
+        Bypass
+    }
+    public enum MfaType
+    {
+        CiscoDuo,
+        GoogleAuthenticator
+    }
+    public class AuthenticationSettings : AppDbSetBase
+    {
+        /// <summary>
+        /// Time a session can remain inactive before expiring in minutes
+        /// </summary>
+        public int? SessionTimeout { get; set; } = 15;
+        [Required]
+        [ValidAdminPasswordAttribute]
+        public string? AdminPassword { get; set; }
+        [NotMapped]
+        [Required]
+        [Compare(nameof(AdminPassword))]
+        public string? AdminPasswordConfirmed { get; set; }
+        public bool DuoEnabled { get; set; }
+        public string? DuoClientId { get; set; }
+        public string? DuoClientSecret { get; set; }
+        public string? DuoApiHost { get; set; }
+        public DuoUnreachableBehavior DuoUnreachableBehavior { get; set; } = DuoUnreachableBehavior.Block;
+
+        /// <summary>
+        /// Indicates that MFA must be used by all users other than admimn and demo
+        /// </summary>
+        /// <remarks>
+        /// If DUO is enabled this setting has no effect.
+        /// </remarks>
+        public bool RequireMFA { get; set; }
+        public MfaType MFAType { get; set; }
+
+        [NotMapped]
+        public bool DuoSettingsValid
+        {
+            get
+            {
+                return DuoEnabled &&
+                    DuoClientSecret != null &&
+                    DuoClientId != null &&
+                    DuoApiHost != null;
+            }
+        }
+    }
+}

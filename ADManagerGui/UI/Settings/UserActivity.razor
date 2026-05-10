@@ -1,0 +1,34 @@
+@using ADManager.Gui.UI.Shared
+@inherits SettingsComponents
+<MudText Typo="Typo.h4">@AppLocalization[Lang.User_Activity]</MudText>
+
+<MudDataGrid Items="@UserStateService.UserStates">
+    <Columns>
+        <PropertyColumn Title=@AppLocalization[Lang.Username] Property="x => x.User.Identity==null?null:x.User.Identity.Name" />
+        <TemplateColumn Title=@AppLocalization[Lang.IP_Address]>
+            <CellTemplate>
+                <IPAddress>@context.Item.IPAddress</IPAddress>
+            </CellTemplate>
+        </TemplateColumn>
+        <PropertyColumn Title=@AppLocalization[Lang.Browser] Property="x => x.Browser == null ? null : x.Browser" />
+
+        <TemplateColumn Title=@AppLocalization[Lang.Impersonator]>
+            <CellTemplate>
+                <MudText>@context.Item.Impersonator?.Identity?.Name</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+       
+        <PropertyColumn Title=@AppLocalization[Lang.Last_URI] Property="x => x.LastUri" />
+       
+        <TemplateColumn Title=@AppLocalization[Lang.Last_Access]>
+            <CellTemplate>
+                <MudText>@context.Item.LastAccessed.ToLocalTime()</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+
+        <PropertyColumn Title=@AppLocalization[Lang.Session_Expiration_Time] Property="x => x.Ticket==null?null:(DateTimeOffset.UtcNow-x.Ticket.Properties.ExpiresUtc)" />
+    </Columns>
+</MudDataGrid>
+@code {
+
+}

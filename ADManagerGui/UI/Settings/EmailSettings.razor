@@ -1,0 +1,210 @@
+@using ADManager.EmailMessage.Email
+@inherits SettingsComponents
+
+
+
+
+<MudText Typo="Typo.h4">@AppLocalization[Lang.Email_Settings]</MudText>
+<MudForm @ref=Form @bind-IsValid=IsValid Model="settings">
+    <MudStack Spacing="5">
+        <SettingsField Label="@AppLocalization[Lang.Email_Enabled]">
+            <MudSwitch @bind-Value="settings.Enabled"
+                       Color="Color.Success"
+                       UncheckedColor="Color.Error" />
+        </SettingsField>
+
+
+        <SettingsField Label="@AppLocalization[Lang.Admin_bcc]">
+            <MudTextField Label="@AppLocalization[Lang.Admin_bcc]"
+                          For=@(() => settings.AdminBcc)
+                          HelperText="Addresses to blind copy all application emails that are sent."
+                          @bind-Value="settings.AdminBcc" />
+        </SettingsField>
+
+        <SettingsField Label="@AppLocalization[Lang.SMTP_Server]">
+            <MudTextField Label="@AppLocalization[Lang.SMTP_Server]"
+                          For=@(() => settings.SMTPServer)
+                          @bind-Value="settings.SMTPServer" />
+        </SettingsField>
+
+        <SettingsField Label="@AppLocalization[Lang.SMTP_Port]">
+
+
+            <MudNumericField Label="@AppLocalization[Lang.SMTP_Port]"
+                             For=@(()=> settings.SMTPPort)
+                             T="int"
+                             HideSpinButtons="true"
+                             @bind-Value="settings.SMTPPort" />
+
+        </SettingsField>
+
+        <SettingsField Label="@AppLocalization[Lang.Use_TLS]">
+
+            <MudSwitch Label="@AppLocalization[Lang.Enabled]"
+                       Color="Color.Success"
+                       UncheckedColor="Color.Error"
+                       @bind-Value="settings.UseTLS" />
+
+        </SettingsField>
+
+
+        <SettingsField Label="@AppLocalization[Lang.Use_SMTP_Authentication]">
+
+            <MudSwitch Label="@AppLocalization[Lang.Enabled]"
+                       Color="Color.Success"
+                       UncheckedColor="Color.Error"
+                       @bind-Value="settings.UseSMTPAuth" />
+
+        </SettingsField>
+
+        @if (settings.UseSMTPAuth)
+        {
+            <SettingsField Label="@AppLocalization[Lang.SMTP_Username]">
+
+                <MudTextField Label="@AppLocalization[Lang.SMTP_Username]"
+                              For=@(() => settings.SMTPUsername)
+                              @bind-Value="settings.SMTPUsername" />
+            </SettingsField>
+
+            <SettingsField Label="@AppLocalization[Lang.SMTP_Password]">
+
+
+                <MudTextField Label="@AppLocalization[Lang.SMTP_Password]"
+                              For=@(() => settings.SMTPPassword)
+                              InputType="InputType.Password"
+                              Value="@settings.SMTPPassword"
+                              ValueChanged="@(async (string val)=>{await SetPassword(val);})" />
+
+            </SettingsField>
+        }
+        <SettingsField Label="@AppLocalization[Lang.From_Address]">
+
+
+            <MudTextField Label="@AppLocalization[Lang.From_Address]"
+                          For=@(() => settings.FromAddress)
+                          @bind-Value="settings.FromAddress" />
+        </SettingsField>
+        <SettingsField Label="@AppLocalization[Lang.From_Display_Name]">
+
+
+            <MudTextField Label="@AppLocalization[Lang.From_Display_Name]"
+                          For=@(() => settings.FromName)
+                          @bind-Value="settings.FromName" />
+
+        </SettingsField>
+
+        <SettingsField Label="@AppLocalization[Lang.Reply_To_Address]">
+
+
+            <MudTextField Label="@AppLocalization[Lang.Reply_To_Address]"
+                          For=@(() => settings.ReplyToAddress)
+                          @bind-Value="settings.ReplyToAddress" />
+
+        </SettingsField>
+
+        <SettingsField Label="@AppLocalization[Lang.Reply_To_Display_Name]">
+
+
+            <MudTextField Label="@AppLocalization[Lang.Reply_To_Display_Name]"
+                          For=@(() => settings.ReplyToName)
+                          @bind-Value="settings.ReplyToName" />
+
+        </SettingsField>
+
+        <MudTextField Label="@AppLocalization[Lang.Test_Recipient]"
+                      For=@(() => testRecipient)
+                      Disabled=@(!settings.Enabled)
+                      @bind-Value=testRecipient />
+
+        <MudButton Disabled=@((!settings.Enabled && !settings.Valid()) || LoadingData)
+                   @onclick="SendTestEmail"
+                   Color="Color.Success">Send Test Email</MudButton>
+        @if (ApplicationInfo.InDebugMode && emailPreview != null)
+        {
+            <MudContainer MaxWidth="MaxWidth.Large" Style="min-height:500px;">
+                @((MarkupString)emailPreview)
+            </MudContainer>
+
+
+        }
+        <SettingsField>
+
+            <MudButton Disabled="!IsValid"
+                       OnClick="Save"
+                       Color="Color.Success">
+                @AppLocalization[Lang.Save_Changes]
+            </MudButton>
+
+        </SettingsField>
+        <LoadingData Loading=LoadingData />
+    </MudStack>
+</MudForm>
+@code {
+
+    string? emailPreview = null;
+    ADManager.Database.Models.EmailSettings settings = new ADManager.Database.Models.EmailSettings();
+    string testRecipient;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (Context != null)
+        {
+            originalSettings = await Context.EmailSettings.AsNoTracking().FirstOrDefaultAsync();
+            var set = await Context.EmailSettings.FirstOrDefaultAsync();
+
+            if (set != null)
+            {
+                settings = set;
+            }
+        }
+        _ = Task.Run(async () =>
+            {
+                if (EmailService.IsConfigured)
+                    emailPreview = EmailService.BuildMessage<TestEmailMessage>("AD Manager Test Email", "to@test.com").HtmlBody;
+                await StateHasChangedAsync();
+            });
+
+        LoadingData = false;
+        await StateHasChangedAsync();
+    }
+    async Task SendTestEmail()
+    {
+        try
+        {
+            LoadingData = true;
+            await EmailService.SendTestEmail(testRecipient);
+            await MessageService.Success("A test email was sent to " + testRecipient, "Test Email Sent");
+
+        }
+        catch (Exception ex)
+        {
+            await MessageService.Error(ex.Message, "Test Failed");
+        }
+        LoadingData = false;
+    }
+
+    private async Task SetPassword(string? newPassword)
+    {
+        if (newPassword == null || newPassword.IsNullOrEmpty())
+        {
+            settings.SMTPPassword = null;
+            return;
+        }
+
+        settings.SMTPPassword = await newPassword.EncryptAsync();
+    }
+
+    protected override async Task Save()
+    {
+        if (settings.Id == 0 && Context != null)
+        {
+            settings.Id = 1;
+            Context.EmailSettings.Add(settings);
+        }
+        await base.Save();
+        await AuditLogger.System.SettingsChanged("Email", settings.GetChanges(originalSettings));
+
+
+    }
+}

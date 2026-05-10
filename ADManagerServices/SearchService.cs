@@ -1,0 +1,138 @@
+﻿using ADManager.ActiveDirectory.Interfaces;
+using ADManager.ActiveDirectory.Searchers;
+using ADManager.Database.Models.Rules;
+using ADManager.Logger;
+using ADManager.Session.Interfaces;
+using Microsoft.AspNetCore.Components;
+using MudBlazor.Charts;
+using System.Web;
+
+namespace ADManager.Services
+{
+    /// <summary>
+    /// Service responsible for managing search functionality, including search terms and user preferences related to search.
+    /// </summary>
+    public class SearchService
+    {
+        private readonly IApplicationUserStateService _userStateService;
+        private readonly NavigationManager _nav;
+        private bool includeDisabled = false;
+        private string? searchTerm;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether disabled AD objects should be included in search results. Persists this preference.
+        /// </summary>
+        public bool IncludeDisabled
+        {
+            get => includeDisabled; set
+            {
+                if (includeDisabled == value)
+                {
+                    return;
+                }
+
+                includeDisabled = value;
+                DisabledOptionChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the current search term string.
+        /// </summary>
+        public string? SearchTerm
+        {
+            get => searchTerm;
+            set => searchTerm = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the type of Active Directory object to filter searches by. Defaults to All.
+        /// </summary>
+        public ActiveDirectoryObjectType SeachObjectType { get; set; } = ActiveDirectoryObjectType.All;
+        public List<AutomationRuleOrFilter> Filters { get; private set; } = [];
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SearchService"/> class.
+        /// </summary>
+        /// <param name="userStateService">Service for accessing current user state and preferences.</param>
+        /// <param name="nav">Navigation manager for redirecting to search pages.</param>
+        /// <exception cref="ArgumentNullException">Thrown if userStateService or nav is null.</exception>
+        public SearchService(IApplicationUserStateService userStateService, NavigationManager nav)
+        {
+            ArgumentNullException.ThrowIfNull(userStateService);
+
+            ArgumentNullException.ThrowIfNull(nav);
+
+
+            _userStateService = userStateService;
+            _nav = nav;
+            includeDisabled = _userStateService.CurrentUserState?.Preferences?.SearchDisabledUsers == true;
+        }
+
+        /// <summary>
+        /// Handles the change in the IncludeDisabled option and saves the user's preference.
+        /// </summary>
+        private async Task DisabledOptionChanged()
+        {
+            if (_userStateService.CurrentUserState == null)
+            {
+                Loggers.SystemLogger.Warning("SearchService.DisabledOptionChanged: _userStateService.CurrentUserState is null. Cannot save preferences.");
+                return;
+            }
+            try
+            {
+                _userStateService.CurrentUserState.Preferences.SearchDisabledUsers = IncludeDisabled;
+                await _userStateService.CurrentUserState.SaveBasicUserPreferences();
+            }
+            catch (Exception ex)
+            {
+                Loggers.SystemLogger.Warning(ex, "SearchService.DisabledOptionChanged: Exception caught while trying to save user preferences for SearchDisabledUsers.");
+            }
+        }
+
+        /// <summary>
+        /// Asynchronously performs a search using the current <see cref="SearchTerm"/> by navigating to the search page.
+        /// </summary>
+        public async Task SearchAsync() => await Task.Run(() => { Search(null); });
+
+        /// <summary>
+        /// Performs a search. If a searchTerm parameter is provided, it updates the current <see cref="SearchTerm"/>. Navigates to the search page.
+        /// </summary>
+        /// <param name="searchTerm">Optional search term to set before navigating.</param>
+        public void Search(string? searchTerm = null)
+        {
+            Loggers.SystemLogger.Debug("SearchService.Search: Search called. Current SearchTerm: '{CurrentSearchTerm}', Provided searchTerm parameter: '{ProvidedSearchTerm}'", SearchTerm, searchTerm);
+            if (searchTerm != null)
+            {
+                SearchTerm = searchTerm;
+            }
+
+            Loggers.SystemLogger.Debug("SearchService.Search: Navigating to /search/{FinalSearchTerm}", SearchTerm);
+            _nav.NavigateTo("/search/" + Uri.EscapeDataString(SearchTerm??String.Empty));
+
+
+
+        }
+
+        /// <summary>
+        /// Performs an advanced search using the specified collection of automation rules or filters.
+        /// </summary>
+        /// <remarks>This method updates the current search filters and navigates to the advanced search
+        /// page. The search results are determined by the provided filters. If no filters are specified, the previous
+        /// filter settings remain unchanged.</remarks>
+        /// <param name="filters">A list of automation rules or filters to apply to the search. If null, the existing filters are retained.</param>
+        public void AdvancedSearch(List<AutomationRuleOrFilter> filters)
+        {
+            Loggers.SystemLogger.Debug("Advanced search: {@Filters}",filters);
+            {
+                Filters = filters;
+            }
+            //The following is a fake navigation to trick the navigation manager into allowing go back a page
+            Loggers.SystemLogger.Debug("SearchService.Search: Navigating to /advsearch");
+            _nav.NavigateTo("/advsearch/"+Guid.NewGuid());
+
+
+
+        }
+    }
+}

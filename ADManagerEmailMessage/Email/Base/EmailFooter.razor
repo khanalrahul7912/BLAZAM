@@ -1,0 +1,21 @@
+@using ADManager.Helpers
+
+<EmailHorizontalLineBreak />
+
+<MudText Color=Color.Surface Class="mud-width-full mb-3" Align="Align.Center">
+    @if (DatabaseCache.ApplicationSettings?.AppFQDN?.IsNullOrEmpty() == false)
+    {
+        
+         <EmailLink Style="color:white;" Href="/">
+            @(DatabaseCache.ApplicationSettings?.AppName ?? "AD Manager")
+        </EmailLink> 
+        
+
+
+    }
+    else
+    {
+        @(DatabaseCache.ApplicationSettings?.AppName ?? "AD Manager")
+
+    }
+</MudText>

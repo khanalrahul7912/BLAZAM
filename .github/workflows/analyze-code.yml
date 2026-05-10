@@ -48,9 +48,9 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"Blazam-App_BLAZAM" /o:"blazam-app" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.scanner.scanAll=false /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/*.razor.cs,**/*.razor.g.cs,**/_Imports.razor.g.cs"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"khanalrahul7912_BLAZAM" /o:"admanager-app" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.scanner.scanAll=false /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" /d:sonar.coverage.exclusions="**/*.razor.cs,**/*.razor.g.cs,**/_Imports.razor.g.cs"
           dotnet build
-          dotnet test .\BLAZAM.Tests\BLAZAM.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/BLAZAM.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          dotnet test .\BLAZAMCommon.Tests\BLAZAMCommon.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/BLAZAMCommon.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-          dotnet test .\BLAZAMDatabase.Tests\BLAZAMDatabase.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/BLAZAMDatabase.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          dotnet test .\ADManager.Tests\ADManager.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/ADManager.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          dotnet test .\ADManagerCommon.Tests\ADManagerCommon.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/ADManagerCommon.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          dotnet test .\ADManagerDatabase.Tests\ADManagerDatabase.Tests.csproj --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults/ADManagerDatabase.Tests/ -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"

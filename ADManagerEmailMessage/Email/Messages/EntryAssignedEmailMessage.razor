@@ -1,0 +1,36 @@
+﻿@using ADManager.Helpers
+@using System.Security
+@inherits EmailNotificationTemplateComponent
+
+    <EmailTemplateHeader>
+    <strong>@AppLocalization[Lang.Group_member_added]</strong>
+    </EmailTemplateHeader>
+   
+    <EmailTemplateBody>
+    @EntryName @AppLocalization["has been assigned to"] @GroupName
+    <br/>
+    @if (ShouldRenderLinks)
+    {
+        <br />
+        <EmailLink Href="@EntryLink" />
+    }
+   
+    </EmailTemplateBody>
+
+
+@code{
+
+    [Parameter]
+    public string? GroupName { get; set; }
+    public override string Render() => new ComponentRenderer<EntryAssignedEmailMessage>()
+            .UseLayout<DefaultEmailLayout>()
+            .AddServiceProvider(ApplicationInfo.services)
+            .Set(c => c.EntryName, EntryName)
+            .Set(c => c.EntryLink, EntryLink)
+
+            .Set(c => c.GroupName, GroupName)
+            .Render();
+}
+
+
+

@@ -1,0 +1,17 @@
+﻿@using ADManager.Database.Interfaces
+
+@inject  IDatabaseContext Context
+@code {
+    readonly bool installed = ApplicationInfo.installationCompleted;
+    
+}
+<h3>Database Server is Unreachable</h3>
+@if (!installed)
+{
+   <p>Check the connection string in appsettings.json</p>
+}
+else
+{
+    <p>Please contact the system adminstrator.</p>
+
+}

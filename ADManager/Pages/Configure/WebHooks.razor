@@ -1,0 +1,28 @@
+﻿@page "/webhooks"
+@using ADManager.Global.Data
+@using ADManager.Gui.UI.Settings.WebHooks
+@attribute [Authorize(Roles = UserRoles.SuperAdmin)]
+
+@inherits TabbedAppComponentBase
+
+<AppPageTitle>@AppLocalization[Lang.Webhooks]</AppPageTitle>
+<AuthorizeView Roles=@UserRoles.SuperAdmin>
+
+    <SetHeader>
+    </SetHeader>
+
+
+
+
+
+    <WebHookSettings />
+
+
+
+
+</AuthorizeView>
+
+
+@code {
+
+}

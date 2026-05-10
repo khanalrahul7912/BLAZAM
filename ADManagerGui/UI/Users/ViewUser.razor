@@ -1,0 +1,132 @@
+﻿@using ADManager.Common.Data.Database
+@using ADManager.Gui.UI.Users.Sections
+@inherits DirectoryEntryViewBase
+
+@if (GroupableEntry?.NewEntry == true)
+{
+    EditMode = true;
+
+}
+@if (GroupableEntry != null)
+{
+    <AppPageTitle>@Contact?.DisplayName</AppPageTitle>
+
+
+    <EditForm OnValidSubmit=SaveChanges Model="GroupableEntry">
+        <CascadingValue Value="EditMode">
+
+            @if (GroupableEntry?.NewEntry == false)
+            {
+                <SetSubHeader @ref="SubHeader">
+
+                    <DirectoryEntryViewHeader EditMode="@EditMode"
+                                              DirectoryEntry="@GroupableEntry"
+                                              OnAssignTo="@(()=>{AssignToModal?.ShowAsync();})"
+                                              OnDelete="@DeleteUser"
+                                              OnDisable="@(async()=>{Account.Enabled=false; await RefreshEntryComponents();})"
+                                              OnEnable="@(async()=>{Account.Enabled=true; await RefreshEntryComponents();})"
+                                              OnMove="@(()=>{MoveToModal?.ShowAsync();})"
+                                              OnRename="@(()=>{RenameModal?.ShowAsync();})"
+                                              OnResetPassword="@(()=>{ChangePasswordModal?.ShowAsync();})"
+                                              OnToggleEditMode="ToggleEditMode"
+                                              OnShowHistory="@(()=>{ChangeHistoryModal?.ShowAsync();})"
+                                              OnShowPermissions="@(()=>{EffectivePermissionsModal?.ShowAsync();})"
+                                              OnUnlock="@Unlock" />
+
+                    <LoadingData Loading=SavingChanges />
+
+
+
+                </SetSubHeader>
+            }
+            <CascadingValue Value="GroupableEntry">
+                <CascadingValue Value="DirectoryEntry">
+
+                   
+                    <AppModal Color="Color.Dark" Title=@AppLocalization[Lang.Assign_To] @ref=@AssignToModal>
+                        <AssignToModalContent ModelChanged=@RefreshEntryComponents DirectoryModel="Contact" />
+                    </AppModal>
+                    <AppModal Color="Color.Dark" Title=@AppLocalization[Lang.Move_To] @ref=@MoveToModal>
+                        @if (MoveToModal?.IsShown == true)
+                        {
+                            <MoveToOUModalContent ModelChanged=@RefreshEntryComponents DirectoryModel="GroupableEntry" />
+                        }
+                    </AppModal>
+                    <AppModal Title=@AppLocalization[Lang.Rename_User] @ref=@RenameModal>
+                        @if (RenameModal?.IsShown == true)
+                        {
+                            <RenameUserModalContent DirectoryModelRenamed=@((renamedUser)=>{Renamed(null,renamedUser);}) Entry="Contact" />
+                        }
+                    </AppModal>
+                    <AppModal Title=@AppLocalization[Lang.Reset_Password] @ref=@ChangePasswordModal>
+                        @if (ChangePasswordModal?.IsShown == true)
+                        {
+                            <ChangeUserPasswordModalContent Entry="User" />
+                        }
+                    </AppModal>
+
+
+                    <MudGrid>
+                        <MudItem xs="12" md="3">
+                            <DetailsSection AssignToClicked=@(()=>{AssignToModal?.ShowAsync();})/>
+                           
+                        </MudItem>
+                        <MudItem xs=12 md="9">
+                            <MudStack>
+
+
+                                <NameSection />
+
+                                <AccountSection PasswordChanged="PasswordChanged" ConfirmPasswordChanged="ConfirmPasswordChanged" />
+
+
+                            </MudStack>
+
+                        </MudItem>
+                    </MudGrid>
+
+                    <OrganizationSection />
+
+                    <ContactInfoSection />
+
+                    @if (User != null)
+                    {
+                        <ProfileSection />
+                    }
+
+                    @if (GroupableEntry.CanReadAnyCustomFields && CustomFields != null && CustomFields.Count > 0)
+                    {
+                        <ViewSection Title=@AppLocalization[Lang.Additional_Fields]>
+
+                            @foreach (var field in CustomFields)
+                            {
+                                @if (CanReadField(field))
+                                {
+                                    <CustomDirectoryField Disabled=@(!EditMode || !CanEditField(field)) Entry="GroupableEntry" Field="@field" />
+
+
+                                }
+                            }
+
+
+                        </ViewSection>
+                    }
+                    <PluginComponents Page="@PageType.User" Location="@PageLocation.NewSection" />
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
+
+    </EditForm>
+    @if ((GroupableEntry.CanEdit || CurrentUser.State.CanAssign || Account.CanEnable || Account.CanDisable) && GroupableEntry.HasUnsavedChanges && !GroupableEntry.NewEntry)
+    {
+
+        <UnsavedChangesPrompt SaveChanges="SaveChanges" DiscardChanges="DiscardChanges" />
+    }
+    <LoadingData Loading=SavingChanges />
+
+
+}else{
+    var lost = "lost";
+}
+
+

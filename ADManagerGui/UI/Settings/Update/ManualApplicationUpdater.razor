@@ -1,0 +1,235 @@
+@using ADManager.FileSystem;
+@using ADManager.Update;
+@inherits AppComponentBase
+
+@if (ApplicationInfo.InDebugMode)
+{
+
+    <code>
+        Working Directory: @ApplicationInfo.ApplicationRoot
+    </code>
+    <code>
+        PID: @ApplicationInfo.RunningProcess.Id
+    </code>
+}
+@if (AutoUpdateService.IsUpdatedScheduled)
+{
+    <MudAlert Class="mud-alert-filled-info">
+        <MudText Typo="Typo.h6">@AppLocalization[Lang.Update_Scheduled]</MudText>
+        <MudText>
+            The application will be updated to version @AutoUpdateService.ScheduledUpdate?.Version at @AutoUpdateService.ScheduledUpdateTime
+        </MudText>
+    </MudAlert>
+}
+@if (LoadingData)
+{
+    <MudText>Checking for update..</MudText>
+
+}
+
+
+@{
+    if (LatestAvailableVersion != null)
+    {
+        var value = updateStage;
+        switch (updateStage)
+        {
+            case UpdateStage.Downloading:
+                <MudText>Downloading Update...</MudText>
+                @if (DownladProgress != null)
+                {
+
+                    <MudProgressLinear Value="@DownladProgress.FilePercentage">
+                        @(DownladProgress?.CompletedBytes / 1024 / 1024)MB
+                    </MudProgressLinear>
+                }
+                <MudButton Color=Color.Error OnClick=@(()=>{ LatestAvailableVersion.Cancel(); })>Cancel</MudButton>
+                break;
+            case UpdateStage.Staging:
+                <MudText>Staging update, please wait a moment...</MudText>
+                <MudProgressLinear Animated Striped />
+                break;
+            case UpdateStage.BackingUp:
+                <MudText>Backing up current version, please wait a moment...</MudText>
+                <MudProgressLinear Animated Striped />
+
+                break;
+            case UpdateStage.Applying:
+                <MudText>Applying update, please wait a moment...</MudText>
+                <MudProgressLinear Animated Striped />
+
+                break;
+            case UpdateStage.None:
+            default:
+
+                <MudElement Style="max-height:600px;"
+                            Class="overflow-y-auto">
+                    <MudTimeline TimelineAlign="TimelineAlign.Default"
+                                 TimelinePosition="TimelinePosition.Top">
+
+
+                        @if (UpdateService.IncompatibleUpdates.Count > 0)
+                        {
+                            var latestIncompatibleUpdate = UpdateService.IncompatibleUpdates.Where(x => x.Newer).OrderByDescending(x => x.Release.ReleaseTime).FirstOrDefault();
+                            if (latestIncompatibleUpdate != null)
+                            {
+                                <AvailableUpdate Update=@latestIncompatibleUpdate OnApply="ApplyUpdate" Even=true />
+
+                            }
+                        }
+
+                        @if (UpdateService.NewestAvailableUpdate != null)
+                        {
+                            if (UpdateService.NewestAvailableUpdate.Version.NewerThan(ApplicationInfo.RunningVersion))
+                            {
+                                <AvailableUpdate Update=@UpdateService.NewestAvailableUpdate OnApply="ApplyUpdate" Even=true />
+
+                            }
+                            else
+                            {
+                                <MudTimelineItem Color="Color.Success" Size="Size.Small">
+                                    <ItemOpposite>
+                                        <MudText Color="Color.Success" Typo="Typo.h5">@AppLocalization[Lang.Up_to_date]</MudText>
+                                    </ItemOpposite>
+                                    <ItemContent>
+
+                                    </ItemContent>
+                                </MudTimelineItem>
+                            }
+                        }
+
+                        <MudTimelineItem Color="Color.Info" Size="Size.Small">
+                            <ItemOpposite>
+                                <MudText Color="Color.Info" Typo="Typo.h5">@AppLocalization[Lang.Previous_Versions]</MudText>
+                            </ItemOpposite>
+                            <ItemContent>
+                                <MudCard Class="pa-3">
+
+
+                                    <MudButton Class="mx-6"
+                                               OnClick="(()=>{ShowAllUpdates = !ShowAllUpdates;})"
+                                               Color="Color.Success">
+                                        @(AppLocalization[ShowAllUpdates == false ? "Show Previous Updates" : "Hide Previous Updates"])
+                                    </MudButton>
+
+
+
+                                </MudCard>
+
+
+                            </ItemContent>
+                        </MudTimelineItem>
+
+
+
+                        @if (ShowAllUpdates)
+                        {
+                            int i = 0;
+
+                            @foreach (var update in UpdateService.AvailableUpdates
+                       .Where(x => x.Version <= ApplicationInfo.RunningVersion)
+                       .OrderByDescending(x => x.Version)
+                       .Take(previousUpdatesToShow))
+                            {
+
+
+                                <AvailableUpdate Update=@update OnApply="ApplyUpdate" Even=@(true) />
+                                i++;
+
+
+                            }
+                            if (i < UpdateService.AvailableUpdates.Count(x => x.Version <= ApplicationInfo.RunningVersion))
+                            {
+                                <MudButton Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" OnClick="@(()=>{previousUpdatesToShow+=10;})">Show More</MudButton>
+                            }
+
+                        }
+
+
+
+
+                    </MudTimeline>
+
+            </MudElement>
+                
+                @if (AutoUpdateService.IsUpdatedScheduled)
+                {
+                    <MudButton OnClick=@(()=>{AutoUpdateService.Cancel();}) Color="Color.Error">Cancel Auto Update</MudButton>
+                }
+
+
+                break;
+
+        }
+    }
+}
+
+
+
+
+@code {
+
+    int previousUpdatesToShow = 10;
+
+    ApplicationUpdate? LatestAvailableVersion { get; set; }
+
+    UpdateStage updateStage = UpdateStage.None;
+
+    FileProgress? DownladProgress { get; set; } = null;
+
+    private bool ShowAllUpdates { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetLatestUpdate();
+    }
+    public async Task GetLatestUpdate()
+    {
+        LoadingData = true;
+        try
+        {
+            LatestAvailableVersion = await UpdateService.GetUpdates();
+        }
+        catch (Exception ex)
+        {
+            SnackBarService.Error(ex.Message);
+        }
+        LoadingData = false;
+    }
+
+
+    async Task ApplyUpdate()
+    {
+        if (await MessageService.Confirm("Would you like to stage the update?"))
+        {
+            var output = LatestAvailableVersion.GetUpdateJob();
+            if (output != null)
+            {
+                Analytics.UpdateAttempted(LatestAvailableVersion.Version.ToString());
+
+                
+                MessageService.ShowJobDetailsDialog(output, AppLocalization[Lang.Stage_Update]);
+                await output.RunAsync();
+
+            }
+            await StateHasChangedAsync();
+        }
+    }
+
+    async Task UpdateDownloadPercentage(FileProgress? progress)
+    {
+
+        DownladProgress = progress;
+        await StateHasChangedAsync();
+
+    }
+
+    void TestAutoUpdate()
+    {
+        if (LatestAvailableVersion != null)
+            AutoUpdateService.ScheduleUpdate(DateTime.Now.TimeOfDay + TimeSpan.FromSeconds(60), LatestAvailableVersion);
+    }
+
+
+}

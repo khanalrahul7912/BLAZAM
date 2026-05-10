@@ -1,0 +1,37 @@
+﻿@using ADManager.Helpers
+@using System.Security
+@inherits EmailNotificationTemplateComponent
+
+<EmailTemplateHeader>
+    <strong>@AppLocalization[Lang.User_locked_out]</strong>
+</EmailTemplateHeader>
+
+<EmailTemplateBody>
+    @if (EntryName != null)
+    {
+        @AppHelpLocalization[HelpLang.Locked_Out, EntryName]
+    }
+    <br />
+    @if (ShouldRenderLinks)
+    {
+        <br />
+
+        <EmailLink Href="@EntryLink" />
+    }
+
+
+</EmailTemplateBody>
+
+
+@code {
+
+    public override string Render() => new ComponentRenderer<LockedOutEmailMessage>()
+            .UseLayout<DefaultEmailLayout>()
+            .AddServiceProvider(ApplicationInfo.services)
+            .Set(c => c.EntryName, EntryName)
+            .Set(c => c.EntryLink, EntryLink)
+            .Render();
+}
+
+
+
