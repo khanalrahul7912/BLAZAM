@@ -1,4 +1,4 @@
-# AD-Management – Hosting, Setup & Upstream-Sync Guide
+# AD Manager – Hosting, Setup & Upstream-Sync Guide
 
 ## 1. Install & Host on a Linux Server
 
@@ -36,7 +36,7 @@ sudo useradd -r -s /usr/sbin/nologin admanagement
 **Option A – Download a published build from GitHub Releases**
 
 ```bash
-RELEASE_URL="https://github.com/khanalrahul7912/BLAZAM/releases/latest/download/linux-x64.zip"
+RELEASE_URL="https://github.com/khanalrahul7912/ADManager/releases/latest/download/linux-x64.zip"
 sudo mkdir -p /opt/admanagement
 sudo wget -qO /tmp/admanagement.zip "$RELEASE_URL"
 sudo unzip /tmp/admanagement.zip -d /opt/admanagement
@@ -46,9 +46,9 @@ sudo unzip /tmp/admanagement.zip -d /opt/admanagement
 
 ```bash
 # Requires .NET SDK 8
-git clone https://github.com/khanalrahul7912/BLAZAM.git
-cd BLAZAM
-dotnet publish BLAZAM/BLAZAM.csproj -c Release -r linux-x64 --self-contained false -o /opt/admanagement
+git clone https://github.com/khanalrahul7912/ADManager.git
+cd ADManager
+dotnet publish ADManager/ADManager.csproj -c Release -r linux-x64 --self-contained false -o /opt/admanagement
 ```
 
 ---
@@ -95,12 +95,12 @@ For **MySQL** replace `AppConnection` with:
 ```bash
 sudo tee /etc/systemd/system/admanagement.service > /dev/null <<'EOF'
 [Unit]
-Description=AD-Management Web Application
+Description=AD Manager Web Application
 After=network.target
 
 [Service]
 WorkingDirectory=/opt/admanagement
-ExecStart=/usr/bin/dotnet /opt/admanagement/BLAZAM.dll
+ExecStart=/usr/bin/dotnet /opt/admanagement/ADManager.dll
 Restart=always
 RestartSec=10
 SyslogIdentifier=admanagement
@@ -161,7 +161,7 @@ sudo nginx -t && sudo systemctl reload nginx
    - Database connection
    - AD / LDAP connection details
    - Creating the first admin account
-3. In **Settings → Application**, change the **App Name** to `AD-Management` if needed.
+3. In **Settings → Application**, change the **App Name** to `AD Manager` if needed.
 
 ---
 
@@ -183,7 +183,7 @@ upstream/main  ──────────────── (tracked read-on
                   ↘ merge/squash
 main           ─── [upstream changes merged here, no custom code]
                   ↘ rebase / cherry-pick
-custom/adm     ─── [your AD-Management customisations live here]
+custom/adm     ─── [your AD Manager customisations live here]
 ```
 
 | Branch | Purpose |
@@ -218,13 +218,13 @@ Your customisations are confined to a small set of files:
 
 | File | What was changed |
 |---|---|
-| `BLAZAMDatabase/Models/AppSettings.cs` | Default app name → "AD-Management" |
-| `BLAZAM/Pages/_Host.cshtml` | Reconnect dialog text |
-| `BLAZAMGui/UI/Modals/AboutAppModalContent.razor` | Removed blazam.org links |
-| `BLAZAM/Pages/Privacy.razor` | Rebranded BLAZAM → AD-Management |
-| `BLAZAMGui/UI/Outputs/AppDocumentationButton.razor` | Docs URL → GitHub wiki |
-| `BLAZAMGui/Navs/Buttons/AppUserButton.razor` | Docs URL → GitHub wiki |
-| `BLAZAMServices/Background/ApplicationNewsService.cs` | Disabled upstream news API |
+| `ADManagerDatabase/Models/AppSettings.cs` | Default app name → "AD Manager" |
+| `ADManager/Pages/_Host.cshtml` | Reconnect dialog text |
+| `ADManagerGui/UI/Modals/AboutAppModalContent.razor` | Removed admanager.org links |
+| `ADManager/Pages/Privacy.razor` | Rebranded ADManager → AD Manager |
+| `ADManagerGui/UI/Outputs/AppDocumentationButton.razor` | Docs URL → GitHub wiki |
+| `ADManagerGui/Navs/Buttons/AppUserButton.razor` | Docs URL → GitHub wiki |
+| `ADManagerServices/Background/ApplicationNewsService.cs` | Disabled upstream news API |
 
 Because these are focused, minimal changes, rebase conflicts will be easy to resolve.
 
@@ -236,5 +236,5 @@ Even after deployment you can change the displayed name without redeploying:
 
 1. Log in as a **Super Admin**.
 2. Navigate to **Settings → Application**.
-3. Change **App Name** to `AD-Management` (or any label you prefer).
+3. Change **App Name** to `AD Manager` (or any label you prefer).
 4. Save – the change takes effect immediately site-wide.

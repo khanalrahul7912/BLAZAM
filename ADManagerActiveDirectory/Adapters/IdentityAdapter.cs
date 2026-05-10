@@ -1,0 +1,27 @@
+﻿
+
+using ADManager.ActiveDirectory.Interfaces;
+using ADManager.Database.Models;
+
+namespace ADManager.ActiveDirectory.Adapters
+{
+
+    public class IdentityAdapter : GroupableDirectoryAdapter, IIdentityAdapater
+    {
+        public virtual string? SAMAccountName
+        {
+
+            get
+            {
+                return GetStringAttribute(ActiveDirectoryFields.SAMAccountName.FieldName);
+            }
+            set
+            {
+                SetAttribute(ActiveDirectoryFields.SAMAccountName.FieldName, value);
+            }
+
+
+        }
+
+    }
+}

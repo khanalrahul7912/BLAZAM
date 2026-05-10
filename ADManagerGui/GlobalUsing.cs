@@ -1,0 +1,27 @@
+﻿global using ADManager.ActiveDirectory.Adapters;
+global using ADManager.ActiveDirectory.Interfaces;
+global using ADManager.ActiveDirectory.Searchers;
+global using ADManager.Common.Data;
+global using ADManager.Common.Data.Services;
+global using ADManager.Common.Exceptions;
+global using ADManager.Database.Interfaces;
+global using ADManager.Database.Models;
+global using ADManager.Database.Models.Notifications;
+global using ADManager.Database.Models.Templates;
+global using ADManager.Database.Models.User;
+global using ADManager.Global.Events;
+global using ADManager.Global.Exceptions;
+global using ADManager.Helpers;
+global using ADManager.Localization;
+global using ADManager.Logger;
+global using ADManager.Notifications.Services;
+global using ADManager.Services;
+global using ADManager.Services.Background;
+global using ADManager.Session.Interfaces;
+global using ADManager.Update.Services;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.Data.SqlClient;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Localization;
+global using Microsoft.JSInterop;
+

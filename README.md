@@ -1,11 +1,11 @@
-# AD-Management
+# AD Manager
 
-AD-Management is your forked and rebranded Active Directory management platform based on BLAZAM.
+AD Manager is your forked and rebranded Active Directory management platform for Active Directory administration.
 It provides web-based AD administration, delegated permissions, automation rules, auditing, and integrations.
 
 ## Status of this fork
 
-- Branding updated to **AD-Management**
+- Branding updated to **AD Manager**
 - Upstream-specific URL endpoints removed from user-facing paths
 - Production-focused deployment guidance included below
 
@@ -49,7 +49,7 @@ sudo chown -R admanagement:admanagement /opt/ad-management /var/lib/ad-managemen
 Publish from source (on a build host), then copy the published output to `/opt/ad-management` on the target server:
 
 ```bash
-dotnet publish BLAZAM/BLAZAM.csproj -c Release -o /opt/ad-management
+dotnet publish ADManager/ADManager.csproj -c Release -o /opt/ad-management
 ```
 
 > If your local folder layout differs, update the `.csproj` path accordingly.
@@ -60,12 +60,12 @@ Create `/etc/systemd/system/ad-management.service`:
 
 ```ini
 [Unit]
-Description=AD-Management
+Description=AD Manager
 After=network.target
 
 [Service]
 WorkingDirectory=/opt/ad-management
-ExecStart=/usr/bin/dotnet /opt/ad-management/BLAZAM.dll
+ExecStart=/usr/bin/dotnet /opt/ad-management/ADManager.dll
 Restart=always
 RestartSec=5
 User=admanagement
@@ -75,7 +75,7 @@ Environment=ASPNETCORE_ENVIRONMENT=Production
 WantedBy=multi-user.target
 ```
 
-> The executable remains `BLAZAM.dll` because the upstream assembly name has not been renamed.
+> The executable is now `ADManager.dll` to match the renamed project and assembly output.
 
 Enable and start:
 
@@ -136,6 +136,53 @@ Add optional Seq settings in your `appsettings.Production.json`:
   }
 }
 ```
+
+---
+
+## Install and host on Windows (production)
+
+### 1) Prerequisites
+
+- Windows Server 2019/2022 or Windows 11
+- .NET 8 Hosting Bundle
+- IIS with ASP.NET Core Hosting enabled
+- TLS certificate for your server hostname
+
+### 2) Install prerequisites
+
+1. Install the **.NET 8 Hosting Bundle** from Microsoft.
+2. In **Server Manager** enable:
+   - Web Server (IIS)
+   - ASP.NET 4.x
+   - WebSocket Protocol
+   - Management Tools
+3. Create a local or domain service account for the application pool identity.
+
+### 3) Publish the application
+
+Run on a build machine or on the server from the repository root:
+
+```powershell
+dotnet publish ADManager/ADManager.csproj -c Release -o C:\inetpub\ad-manager
+```
+
+### 4) Create the IIS site
+
+1. Open **IIS Manager**.
+2. Create a new **Application Pool** named `ADManagerPool` using **No Managed Code**.
+3. Set the pool identity to the service account created for the app.
+4. Create a new site named `AD Manager` pointing to `C:\inetpub\ad-manager`.
+5. Bind the site to `https` with your TLS certificate.
+
+### 5) File system and app settings
+
+- Grant the app pool identity read/write access to the application writable directories.
+- Set `ASPNETCORE_ENVIRONMENT=Production`.
+- Store secrets outside source control using environment variables or secured configuration transforms.
+
+### 6) Run as a Windows Service (optional)
+
+If you prefer a service instead of IIS, publish to a target directory and register `ADManager.dll` with a service wrapper such as `sc.exe` or NSSM, then place a reverse proxy in front of it if needed.
 
 ---
 

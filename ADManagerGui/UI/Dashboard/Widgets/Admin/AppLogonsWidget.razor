@@ -1,0 +1,46 @@
+﻿@using ADManager.Database.Models.Audit
+@inherits Widget
+@attribute [Authorize(Roles =UserRoles.SuperAdmin)]
+
+<MudDataGrid T="LogonAuditLog"
+             Items="@UserLogons"
+             Dense=true
+             Filterable=true
+             RowsPerPage="@ItemsPerPage"
+             RowsPerPageChanged="@SetRowsPerPage"
+             FilterMode="DataGridFilterMode.Simple"
+             Loading=@LoadingData
+             Square=true
+             ColumnResizeMode="ResizeMode.Column"
+             Virtualize
+             Class="py-0"
+             SortMode="SortMode.Single">
+    <Columns>
+        <TemplateColumn Title=@AppLocalization[Lang.User]>
+            <CellTemplate>
+                <MudText Typo="Typo.caption">@context.Item?.Username</MudText>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title=@AppLocalization[Lang.IP_Address] Sortable="true">
+            <CellTemplate>
+          
+                    <IPAddress Typo="Typo.caption">
+                        @context.Item.IpAddress
+                    </IPAddress>
+                
+
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn Title=@AppLocalization[Lang.Timestamp]>
+            <CellTemplate>
+                <WidgetTimestamp Timestamp="@context.Item?.Timestamp" />
+            </CellTemplate>
+        </TemplateColumn>
+
+
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager PageSizeOptions=[5,10,25,50,100] T="LogonAuditLog" />
+    </PagerContent>
+</MudDataGrid>
+

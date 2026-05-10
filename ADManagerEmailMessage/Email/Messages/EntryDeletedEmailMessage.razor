@@ -1,0 +1,35 @@
+﻿@using ADManager.Helpers
+@using System.Security
+@inherits EmailNotificationTemplateComponent
+
+<EmailTemplateHeader>
+    <strong>@AppLocalization[Lang.Object_deleted]</strong>
+</EmailTemplateHeader>
+
+<EmailTemplateBody>
+    @if (EntryName != null)
+    {
+        @AppHelpLocalization[HelpLang.Deleted, EntryName]
+    }
+
+    <br />
+    @if (ShouldRenderLinks)
+    {
+        <br />
+        <EmailLink Href="/recyclebin" />
+    }
+
+</EmailTemplateBody>
+
+
+@code {
+
+    public override string Render() => new ComponentRenderer<EntryDeletedEmailMessage>()
+            .UseLayout<DefaultEmailLayout>()
+            .AddServiceProvider(ApplicationInfo.services)
+            .Set(c => c.EntryName, EntryName)
+            .Render();
+}
+
+
+

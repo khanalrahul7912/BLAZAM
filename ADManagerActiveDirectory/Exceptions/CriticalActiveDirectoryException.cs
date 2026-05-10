@@ -1,0 +1,16 @@
+﻿
+using ADManager.ActiveDirectory.Interfaces;
+
+namespace ADManager.ActiveDirectory.Exceptions
+{
+    public class CriticalActiveDirectoryException : AppException
+    {
+        public IActiveDirectoryContext Context { get; }
+        public override string Message { get; }
+        public CriticalActiveDirectoryException(IActiveDirectoryContext context, string message)
+        {
+            Context = context;
+            Message = message;
+        }
+    }
+}

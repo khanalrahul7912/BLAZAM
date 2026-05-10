@@ -1,0 +1,40 @@
+@inject IStringLocalizer<AppLocalization> AppLocalization
+@if (!Page.IsNullOrEmpty())
+{
+    <AppTooltip Text=@AppLocalization[Lang.Click_to_view_help_documentation] RootClass="d-inline align-middle">
+        <MudFab StartIcon="@Icon"
+                Href=@("https://github.com/khanalrahul7912/ADManager/wiki"+@Page)
+                Target="_blank"
+                Class="ma-4"
+                DropShadow=false
+                Size="@Size"
+                IconSize="@IconSize"
+                IconColor="@IconColor"
+                Color="@Color" />
+    </AppTooltip>
+}
+@code {
+    [Parameter]
+    public string Icon { get; set; } = Icons.Material.Filled.QuestionMark;
+
+    /// <summary>
+    /// The relative URI on the documentation website to link to
+    /// </summary>
+    /// <remarks>
+    /// eg: "/admin/settings/application"
+    /// </remarks>
+    [Parameter]
+    public string? Page { get; set; }
+
+    [Parameter]
+    public Color IconColor { get; set; } = Color.Surface;
+
+    [Parameter]
+    public Color Color { get; set; } = Color.Tertiary;
+
+    [Parameter]
+    public Size Size { get; set; }
+
+    [Parameter]
+    public Size IconSize { get; set; }
+}

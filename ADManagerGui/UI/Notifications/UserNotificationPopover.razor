@@ -1,0 +1,109 @@
+@inherits DatabaseComponentBase
+
+<MudStack Row=true
+          Class="px-3 sticky mud-theme-secondary mud-width-full"
+          Style="height=60px;">
+
+    <MudText Typo="Typo.h6"
+             Class="sticky align-middle">
+        @AppLocalization[Lang.Notifications]
+    </MudText>
+    <MudSpacer />
+   
+    <AppIconButton Size="Size.Large"
+                   Icon="@Icons.Material.Filled.Settings"
+                   Tooltip="@AppLocalization[Lang.Notification_Settings]"
+                   Color="Color.Info"
+                   OnClick="@(()=>{notificationsModal?.ShowAsync();})" />
+    <AppIconButton Size="Size.Large"
+                   Icon="@Icons.Material.Filled.ClearAll"
+                   Tooltip="@AppLocalization[Lang.Dismiss_all]"
+                   Color="Color.Warning"
+                   OnClick="MarkAllRead" />
+    <AppCloseButton Size="Size.Large"
+                    Icon="@Icons.Material.Filled.Start"
+                    Tooltip="@AppLocalization[Lang.Close]"
+                    TooltipPlacement="Placement.Left"
+                    OnClick=@(()=>{mainLayout.NotificationsOpen=false;}) />
+
+</MudStack>
+<NotificationList @ref=_notificationList UserState="@UserState" />
+
+<AppModal @ref=notificationsModal
+          Title=@AppLocalization[Lang.Notification_Settings]
+          Options="new(){ CloseButton=true, MaxWidth=MaxWidth.ExtraLarge,FullWidth=true}">
+        <NotificaionSubscriptionEditor User="UserState.Preferences" />
+</AppModal>
+
+
+
+@inject IJSRuntime JSRuntime
+@code {
+    private bool pwaNotificationsEnabled;
+    AppModal? notificationsModal;
+    private bool _open;
+    private NotificationList? _notificationList;
+    [Parameter]
+    public bool Open
+    {
+        get => _open; set
+        {
+            if (_open == value) return;
+            _open = value;
+            OpenChanged.InvokeAsync(value);
+
+        }
+    }
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    [Parameter]
+    public IApplicationUserState UserState { get; set; }
+
+    [CascadingParameter]
+    public MainLayout mainLayout { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            pwaNotificationsEnabled = await JSRuntime.InvokeAsync<bool>("admanager.getPushNotificationSubscriptionState");
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    async Task MarkAllRead()
+    {
+
+        var messages = await Context.UserNotifications.Where(un => un.User.Id == UserState.Id && !un.IsRead && un.Notification.MessageType != MessageType.EditAccessRequest).ToListAsync();
+        await UserState.MarkAllRead();
+
+        foreach (var message in messages)
+        {
+            message.IsRead = true;
+
+            await UserState.MarkRead(message);
+        }
+        await UserState.SaveAllUserSettings();
+        UserState.GetUserSettingFromDB();
+
+        Open = false;
+        await _notificationList!.StateHasChangedAsync();
+        await StateHasChangedAsync();
+    }
+    private async Task OnSubscriptionSwitchChanged(bool isSubscribed)
+    {
+        if (isSubscribed)
+        {
+            var subscribed = await JSRuntime.InvokeAsync<bool>("admanager.subscribeToPushNotifications");
+            if (!subscribed)
+            {
+                pwaNotificationsEnabled = false;
+            }
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("admanager.unsubscribeFromPushNotifications");
+        }
+    }
+}

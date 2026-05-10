@@ -362,17 +362,17 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 [Ww]ritable/
-/BLAZAM/Writable/installed.flag
-/BLAZAM/Writable/Security/Database.key
-/BLAZAM/Writable/Security/TokenKey.key
-/BLAZAM/appsettings.json
-/Setup/BLAZAM.msi
-/BLAZAM/database.db
-/BLAZAM/database - Copy.db
-/BLAZAM/export
-/BLAZAM/database - blazam - no rules.db
-/BLAZAM/database - Copy.db.blazam.rules
-/BLAZAM/database - no rules.db
-/BLAZAM/database - rules.db
+/ADManager/Writable/installed.flag
+/ADManager/Writable/Security/Database.key
+/ADManager/Writable/Security/TokenKey.key
+/ADManager/appsettings.json
+/Setup/ADManager.msi
+/ADManager/database.db
+/ADManager/database - Copy.db
+/ADManager/export
+/ADManager/database - admanager - no rules.db
+/ADManager/database - Copy.db.admanager.rules
+/ADManager/database - no rules.db
+/ADManager/database - rules.db
 /coveragereport
-/BLAZAM/Plugins/google.json
+/ADManager/Plugins/google.json

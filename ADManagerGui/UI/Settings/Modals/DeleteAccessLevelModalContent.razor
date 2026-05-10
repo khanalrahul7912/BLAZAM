@@ -1,0 +1,59 @@
+﻿@using ADManager.Database.Models.Audit;
+@using ADManager.Services.Audit;
+@using System.Security.Cryptography.X509Certificates
+@inherits AppModalContent
+<MudContainer MaxWidth="MaxWidth.Medium" Class="pa-0">
+    @if (_usedInMappings.Count > 0)
+    {
+        <MudAlert Severity="Severity.Warning">
+            @AppHelpLocalization[HelpLang.Mapping_Use_Access_Level,[_usedInMappings.Count]]
+            <MudDataGrid Items="_usedInMappings" T="PermissionMapping">
+                <Columns>
+                    <TemplateColumn Title=@AppLocalization[Lang.Delegate]>
+                        <CellTemplate>
+                            <MudList>
+                                @foreach (var delag in context.Item.PermissionDelegates)
+                                {
+                                    <MudListItem Ripple="false">@delag.DelegateName</MudListItem>
+                                }
+                            </MudList>
+                        </CellTemplate>
+                    </TemplateColumn>
+                    <TemplateColumn Title=@AppLocalization[Lang.Target]>
+                        <CellTemplate>
+                           <MudText>@context.Item.OU</MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+              
+                </Columns>
+            </MudDataGrid>
+        </MudAlert>
+    }
+</MudContainer>
+<LoadingData Loading="LoadingData"/>
+@code {
+
+    [Parameter]
+    public AccessLevel AccessLevel { get; set; }
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    List<PermissionMapping> _usedInMappings = new List<PermissionMapping>();
+    protected override async Task OnInitializedAsync()
+    {
+        Modal.SetYesText(AppLocalization[Lang.Delete]);
+        Modal.SetOnYes(OnConfirm.InvokeAsync);
+        await base.OnInitializedAsync();
+        await Modal.RefreshView();
+
+        LoadingData = true;
+        _=Task.Run(() =>
+        {
+            _usedInMappings = Context.PermissionMap.Where(x => x.AccessLevels.Any(al => al.Id == AccessLevel.Id)).Include(x=>x.PermissionDelegates).ToList();
+            LoadingData = false;
+        });
+        await StateHasChangedAsync();
+    }
+
+
+}

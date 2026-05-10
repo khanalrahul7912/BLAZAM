@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Blazam
+about: Suggest an idea for AD Manager
 title: ''
 labels: 'enhancement'
 type: 'Feature'

@@ -7,7 +7,7 @@
 
 # --- Configuration ---
 # The address of your LDAP server (Domain Controller).
-SERVER_ADDRESS="dc-blazam-org.ether.net"
+SERVER_ADDRESS="dc-admanager-org.ether.net"
 # The LDAPS port, typically 636.
 SERVER_PORT="636"
 # --- End Configuration ---

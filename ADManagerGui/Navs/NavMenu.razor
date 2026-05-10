@@ -1,0 +1,173 @@
+﻿@using ADManager.Gui.Navs.Buttons
+@using Microsoft.Extensions.Localization;
+@inherits AppComponentBase
+@{
+
+    string createRole = UserRoles.SuperAdmin + ", " + UserRoles.CreateUsers + ", " + UserRoles.CreateGroups + ", " + UserRoles.CreateOUs;
+}
+
+
+
+
+<MudNavMenu Color="Color.Success"
+            Bordered="true"
+            Class="py-3 w-100">
+    <MudBreakpointProvider>
+        <MudHidden Breakpoint="Breakpoint.MdAndUp">
+            <MudStack Row=true>
+                <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                               Color="Color.Inherit"
+                               OnClick="ToggleDrawer" />
+                <MudImage Class="app-icon"
+                          Src="@StaticAssets.ApplicationIconUri" />
+                <MudText Align="Align.Center"
+                         Class="align-middle"> @DatabaseCache.ApplicationSettings?.AppAbbreviation</MudText>
+
+            </MudStack>
+        </MudHidden>
+    </MudBreakpointProvider>
+    <MudNavLink Href="/home"
+                Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix
+                Icon="@Icons.Material.Filled.Dashboard">
+        @AppLocalization[Lang.Home]
+    </MudNavLink>
+    @if (CurrentUser.State != null && CurrentUser.State?.IsSelfEditOnly == false)
+    {
+        <NavBrowseButton SelectedEntryChanged=@((entry) => { SelectedEntryChanged.InvokeAsync(entry); })
+                         BrowseExpandedChanged=@((value) => { BrowseExpandedChanged.InvokeAsync(value); }) />
+    }
+    <AuthorizeView Context="createContext" Roles=@createRole>
+        <MudNavGroup Icon="@Icons.Material.Filled.Create"
+                     Title="@AppLocalization[Lang.Create]"
+                     Disabled=@(Monitor.DirectoryConnectionStatus != ServiceConnectionState.Up)>
+            <AuthorizeView Roles="@UserRoles.CreateUsers">
+                <MudNavLink Href="/create/user"
+                            Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix>
+                    @AppLocalization[Lang.Create_User]
+                </MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="@UserRoles.CreateContacts">
+                <MudNavLink Href="/create/contact"
+                            Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix>
+                    @AppLocalization[Lang.Create_Contact]
+                </MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="@UserRoles.CreateGroups">
+                <MudNavLink Href="/create/group"
+                            Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix>
+                    @AppLocalization[Lang.Create_Group]
+                </MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="@UserRoles.CreateOUs">
+                <MudNavLink Href="/create/ou"
+                            Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix>
+                    @AppLocalization[Lang.Create_OU]
+                </MudNavLink>
+            </AuthorizeView>
+        </MudNavGroup>
+    </AuthorizeView>
+    <AuthorizeView Roles=@UserRoles.SuperAdmin>
+        <MudNavLink Href="/recyclebin"
+                    Match=Microsoft.AspNetCore.Components.Routing.NavLinkMatch.Prefix
+                    Icon="@Icons.Material.Filled.DeleteOutline"
+                    Disabled=@(Monitor.DirectoryConnectionStatus != ServiceConnectionState.Up)>
+            @AppLocalization[Lang.Recycle_Bin]
+        </MudNavLink>
+        <MudNavGroup Title="@AppLocalization[Lang.Configure]" Icon="@Icons.Material.Filled.Handyman">
+            <MudNavLink Href="/settings">
+                @AppLocalization[Lang.Settings]
+            </MudNavLink>
+
+            <MudNavLink Href="/permissions">
+                @AppLocalization[Lang.Permissions]
+            </MudNavLink>
+
+            <MudNavLink Href="/fields">
+                @AppLocalization[Lang.Fields]
+            </MudNavLink>
+
+            <MudNavLink Href="/templates">
+                @AppLocalization[Lang.Templates]
+            </MudNavLink>
+
+            <MudNavLink Href="/rules">
+                @AppLocalization[Lang.Rules]
+            </MudNavLink>
+
+            <MudNavLink Href="/notifications">
+                @AppLocalization[Lang.Notifications]
+            </MudNavLink>
+
+            <MudNavLink Href="/webhooks">
+                @AppLocalization[Lang.Webhooks]
+            </MudNavLink>
+
+            <MudNavLink Href="/api-tokens">
+                @AppLocalization[Lang.API_Tokens]
+            </MudNavLink>
+            @if (ApplicationInfo.loadedPlugins.Count > 0)
+            {
+                <MudNavLink Href="/plugins">
+                    @AppLocalization[Lang.Plugins]
+
+                </MudNavLink>
+            }
+            <PluginComponents Page="@PageType.ConfigureMenu" Location="@PageLocation.MenuItem" />
+        </MudNavGroup>
+
+        <MudNavLink Href="/audit"
+                    Icon="@Icons.Material.Filled.ReceiptLong">
+            @AppLocalization[Lang.Audit]
+
+        </MudNavLink>
+        <PluginComponents Page="@PageType.MainMenu" Location="@PageLocation.MenuItem" />
+    </AuthorizeView>
+
+
+
+</MudNavMenu>
+
+
+
+
+
+<ScheduledUpdateAnnouncer />
+
+
+@code {
+    [CascadingParameter]
+    public MainLayout? mainLayout { get; set; }
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    [Parameter]
+    public EventCallback<bool> BrowseExpandedChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<IDirectoryEntryAdapter> SelectedEntryChanged { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        Monitor.OnDirectoryConnectionChanged += ((state) => { _=StateHasChangedAsync(); });
+        await StateHasChangedAsync();
+
+
+    }
+
+    public void GotoEntry(IDirectoryEntryAdapter entry)
+    {
+
+        Nav.NavigateTo(entry.SearchUri);
+    }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    private void ToggleDrawer()
+    {
+        if (mainLayout != null)
+        {
+            mainLayout.DrawerOpen = !mainLayout.DrawerOpen;
+        }
+    }
+}

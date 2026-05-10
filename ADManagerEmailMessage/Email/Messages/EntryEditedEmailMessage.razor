@@ -1,0 +1,32 @@
+﻿@using ADManager.Helpers
+@using System.Security
+@inherits EmailNotificationTemplateComponent
+
+    <EmailTemplateHeader>
+    <strong>@AppLocalization[Lang.Entry_modified]</strong>
+    </EmailTemplateHeader>
+   
+    <EmailTemplateBody>
+    @(EntryName + AppLocalization[" has been modified."])
+    <br/>
+   
+   
+    </EmailTemplateBody>
+@if (ShouldRenderLinks)
+{
+    <br />
+    <EmailLink Href="@EntryLink" />
+}
+
+@code{
+ 
+    public override string Render() => new ComponentRenderer<EntryEditedEmailMessage>()
+            .UseLayout<DefaultEmailLayout>()
+            .AddServiceProvider(ApplicationInfo.services)
+            .Set(c => c.EntryName, EntryName)
+            .Set(c => c.EntryLink, EntryLink)
+            .Render();
+}
+
+
+

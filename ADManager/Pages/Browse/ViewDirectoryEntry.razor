@@ -1,0 +1,88 @@
+@using ADManager.Gui.UI.Computers
+@using ADManager.Gui.UI.Groups
+@using ADManager.Gui.UI.OU
+@using ADManager.Gui.UI.Printers
+@using ADManager.Gui.UI.Users
+@inject IStringLocalizer<AppLocalization> AppLocalization
+@implements IDisposable
+<CascadingValue Value="ChangeHistoryModal" Name="ChangeHistoryModal">
+    <CascadingValue Value="EffectivePermissionsModal" Name="EffectivePermissionsModal">
+    @switch (DirectoryEntry?.ObjectType)
+    {
+        case ActiveDirectoryObjectType.User:
+            <ViewUser DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.Contact:
+            <ViewUser DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.Group:
+            <ViewGroup DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.Computer:
+            <ViewComputer DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.OU:
+            <ViewOU DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.Printer:
+            <ViewPrinter DirectoryEntry="DirectoryEntry" />
+            break;
+        case ActiveDirectoryObjectType.BitLocker:
+            <ViewBitLocker DirectoryEntry="DirectoryEntry" />
+            break;
+    }
+</CascadingValue>
+</CascadingValue>
+<AppModal Title=@AppLocalization[Lang.Change_History]
+          @ref=@ChangeHistoryModal
+          Options=@(new DialogOptions(){FullWidth=true,
+          MaxWidth=MaxWidth.ExtraExtraLarge,
+          CloseButton=true})>
+    @if (ChangeHistoryModal?.IsShown == true)
+    {
+        <ChangeHistoryModalContent Model="DirectoryEntry" />
+    }
+</AppModal>
+<AppModal Title=@AppLocalization[Lang.Effective_Permissions]
+          @ref=@EffectivePermissionsModal
+          Options=@(new DialogOptions(){FullWidth=true,
+          MaxWidth=MaxWidth.ExtraExtraLarge,
+          CloseButton=true})>
+    @if (EffectivePermissionsModal?.IsShown == true)
+    {
+        <EffectivePermissionsModalContent Target="DirectoryEntry" />
+    }
+</AppModal>
+
+@code {
+    [Parameter]
+    public IDirectoryEntryAdapter? DirectoryEntry { get; set; }
+
+    protected AppModal? ChangeHistoryModal { get; set; }
+    protected AppModal? EffectivePermissionsModal { get; set; }
+
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if ( DirectoryEntry!=null )
+        {
+            DirectoryEntry.OnModelDeleted.Delegate += Refresh;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (DirectoryEntry != null)
+        {
+            DirectoryEntry.OnModelDeleted.Delegate -= Refresh;
+        }
+    }
+
+    private void Refresh(object? state, object? args)
+    {
+       _ = InvokeAsync(StateHasChanged);
+    }
+    
+}

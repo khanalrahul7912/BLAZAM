@@ -1,0 +1,47 @@
+﻿@using ADManager.Gui.UI.Computers
+@inherits DirectoryEntryViewBase
+
+
+
+<BitLockerViewer Computer="_computer"/>
+<LoadingData Loading=LoadingData />
+
+
+
+
+
+
+
+
+
+@code {
+    IADBitLockerRecovery? BitLocker=> DirectoryEntry as IADBitLockerRecovery;
+    IADComputer? _computer;
+    protected override async Task OnInitializedAsync()
+    {
+
+        await base.OnInitializedAsync();
+        await StateHasChangedAsync();
+
+        if (BitLocker != null)
+        {
+
+            _computer = (IADComputer?)(await BitLocker.GetParentAsync());
+
+            ActiveDirectoryEvents.DirectoryEntryEvent.Invoke(new()
+                {
+                    EventType = ApplicationEventType.Search,
+                    Entry = BitLocker,
+                    Actor = CurrentUser.State
+
+                });
+
+        }
+        LoadingData = false;
+
+        await RefreshEntryComponents();
+    }
+
+
+   
+}

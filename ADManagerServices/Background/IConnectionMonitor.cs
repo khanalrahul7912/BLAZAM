@@ -1,0 +1,12 @@
+﻿using ADManager.Global.Enums;
+
+namespace ADManager.Services.Background
+{
+    public interface IConnectionMonitor
+    {
+        ServiceConnectionState Status { get; }
+        AppDelegate<ServiceConnectionState>? OnConnectedChanged { get; set; }
+
+        void Monitor();
+    }
+}

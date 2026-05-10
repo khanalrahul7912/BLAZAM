@@ -1,0 +1,381 @@
+﻿using ADManager.ActiveDirectory.Interfaces;
+using ADManager.ActiveDirectory.Searchers;
+using ADManager.Common.Data;
+using ADManager.Database.Models;
+using ADManager.Jobs;
+using System.Text.Json.Serialization;
+
+namespace ADManager.ActiveDirectory.Adapters
+{
+
+    public enum GroupScope
+    {
+        Universal,
+        Global,
+        DomainLocal
+    }
+    public class ADGroup : GroupableDirectoryAdapter, IADGroup
+    {
+        protected const int ADS_GROUP_TYPE_GLOBAL_GROUP = 0x2;
+        protected const int ADS_GROUP_TYPE_DOMAIN_LOCAL_GROUP = 0x4;
+        protected const int ADS_GROUP_TYPE_UNIVERSAL_GROUP = 0x8;
+        protected const int ADS_GROUP_TYPE_SECURITY_ENABLED = unchecked((int)0x80000000);
+        public override ActiveDirectoryObjectType ObjectType => ActiveDirectoryObjectType.Group;
+
+        public GroupScope GroupScope
+        {
+            get
+            {
+                if (IsDomainLocalGroup)
+                {
+                    return GroupScope.DomainLocal;
+                }
+
+                if (IsGlobalGroup)
+                {
+                    return GroupScope.Global;
+                }
+
+                return GroupScope.Universal;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case GroupScope.Universal:
+
+                        GroupType = GroupType | ADS_GROUP_TYPE_UNIVERSAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_GLOBAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_DOMAIN_LOCAL_GROUP;
+
+                        break;
+                    case GroupScope.Global:
+                        GroupType = GroupType | ADS_GROUP_TYPE_GLOBAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_UNIVERSAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_DOMAIN_LOCAL_GROUP;
+                        break;
+                    case GroupScope.DomainLocal:
+                        GroupType = GroupType | ADS_GROUP_TYPE_DOMAIN_LOCAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_GLOBAL_GROUP;
+                        GroupType = GroupType & ~ADS_GROUP_TYPE_UNIVERSAL_GROUP;
+                        break;
+
+                }
+            }
+        }
+
+        public virtual string? SAMAccountName
+        {
+
+            get
+            {
+                return GetStringAttribute(ActiveDirectoryFields.SAMAccountName.FieldName);
+            }
+            set
+            {
+                SetAttribute(ActiveDirectoryFields.SAMAccountName.FieldName, value);
+            }
+
+
+        }
+
+        public bool IsSecurityGroup
+        {
+            get
+            {
+                return (GroupType & ADS_GROUP_TYPE_SECURITY_ENABLED) != 0;
+            }
+            set
+            {
+                if (value)
+                {
+                    GroupType = GroupType | ADS_GROUP_TYPE_SECURITY_ENABLED;
+                }
+                else
+                {
+                    GroupType = GroupType & ~ADS_GROUP_TYPE_SECURITY_ENABLED;
+
+                }
+            }
+        }
+        public bool IsGlobalGroup
+        {
+            get
+            {
+                return (GroupType & ADS_GROUP_TYPE_GLOBAL_GROUP) != 0;
+            }
+
+        }
+        public bool IsDomainLocalGroup
+        {
+            get
+            {
+                return (GroupType & ADS_GROUP_TYPE_DOMAIN_LOCAL_GROUP) != 0;
+            }
+
+        }
+        public bool IsUniversalGroup
+        {
+            get
+            {
+                return (GroupType & ADS_GROUP_TYPE_UNIVERSAL_GROUP) != 0;
+
+            }
+
+        }
+
+
+        public List<GroupMembership> MembersToRemove { get; private set; } = [];
+        public List<GroupMembership> MembersToAdd { get; private set; } = [];
+        public override string? DisplayName { get => base.CanonicalName; set => base.CanonicalName = value; }
+        public string? GroupName
+        {
+
+            get
+            {
+                return GetStringAttribute("name");
+            }
+            set
+            {
+                SetAttribute("name", value);
+            }
+        }
+
+
+        public override List<AuditChangeLog> Changes
+        {
+            get
+            {
+                List<AuditChangeLog> changes = base.Changes;
+                if (MembersToAdd.Count > 0 || MembersToRemove.Count > 0)
+                {
+                    var members = MembersAsStrings;
+                    members.AddRange(MembersToAdd.Select(gm => gm.Member.DN));
+                    MembersToRemove.ForEach(gm =>
+                    {
+                        members.Remove(gm.Member.DN);
+                    });
+                    changes.Add(new AuditChangeLog()
+                    {
+                        Field = "member",
+                        OldValue = MembersAsStrings,
+                        NewValue = members
+                    });
+                }
+
+                return changes;
+
+            }
+        }
+
+
+        public override IJob CommitChanges(IJob? commitJob = null)
+        {
+            if (MembersToAdd.Count > 0)
+            {
+                MembersToAdd.ForEach(g =>
+                    {
+                        PostCommitSteps.Add(new JobStep($"Add {g.Member} to {g.Group}", (JobStep? step) =>
+                        {
+                            g.Group.Invoke("Add", new object[] { g.Member.DN });
+                            return true;
+                        }));
+
+                    });
+
+                MembersToAdd.Clear();
+            }
+            if (MembersToRemove.Count > 0)
+            {
+                    MembersToRemove.ForEach(g =>
+                    {
+                        PostCommitSteps.Add(new JobStep($"Remove {g.Member}. from {g.Group}", (JobStep? step) =>
+                        {
+                            g.Group.Invoke("Remove", new object[] { g.Member.DN });
+                            return true;
+                        }));
+                    });
+                MembersToRemove.Clear();
+            }
+
+            commitJob = base.CommitChanges(commitJob);
+
+            return commitJob;
+        }
+
+        public override void DiscardChanges()
+        {
+            MembersToRemove = [];
+            MembersToAdd = [];
+            //CachedChildren = new List<IDirectoryEntryAdapter>();
+            base.DiscardChanges();
+            OnModelChanged?.Invoke();
+
+        }
+        public bool HasMembers => UserMembers.Count > 0 || GroupMembers.Count > 0;
+
+
+        /// <summary>
+        /// The members of this group, that are users themselves
+        /// </summary>
+        [JsonIgnore]
+        public List<IADUser> UserMembers
+        {
+            get
+            {
+                return Members.Where(m => m is IADUser).Cast<IADUser>().ToList();
+            }
+        }
+
+        /// <summary>
+        /// The members of this group, that are groups themselves
+        /// </summary>
+        [JsonIgnore]
+        public List<IADGroup> GroupMembers
+        {
+            get
+            {
+                return Members.Where(m => m is IADGroup).Cast<IADGroup>().ToList();
+            }
+        }
+        public List<string>? MembersAsStrings
+        {
+            get
+            {
+                var temp = GetStringListAttribute("member");
+                return temp;
+            }
+        }
+        protected int GroupType
+        {
+            get
+            {
+                var uacRaw = Convert.ToInt32(GetAttribute<object>("groupType"));
+
+                return uacRaw;
+            }
+            set
+            {
+                SetAttribute("groupType", value);
+            }
+        }
+
+        public async Task<IEnumerable<IGroupableDirectoryAdapter>> GetNestedMembersAsync()
+        {
+
+            ADSearch search = new(Directory);
+            search.Fields.NestedMemberOf = this;
+            search.EnabledOnly = false;
+            var result = await search.SearchAsync<GroupableDirectoryAdapter, IGroupableDirectoryAdapter>();
+            return result;
+
+        }
+        private readonly static object _membersLock = new();
+        /// <summary>
+        /// Gathers current group members in realtime
+        /// </summary>
+        [JsonIgnore]
+        public List<IGroupableDirectoryAdapter> Members
+        {
+            get
+            {
+                var temp = MembersAsStrings;
+
+                List<IGroupableDirectoryAdapter> members = [];
+                temp?.ForEach(t =>
+                {
+                     ADSearch search = new(Directory);
+                    
+                    search.Fields.DN = t;
+                    search.EnabledOnly = false;
+                    var member = search.Search<GroupableDirectoryAdapter, IGroupableDirectoryAdapter>()?.FirstOrDefault();
+                    if (member != null)
+                    {
+                        lock (_membersLock)
+                        {
+                            members.Add(member);
+                        }
+                    }
+                });
+
+                //temp?.ForEach(t =>
+                //{
+                //    search.Results.Clear();
+                //    search.Fields.DN = t;
+                //    var member = search.Search<GroupableDirectoryAdapter, IGroupableDirectoryAdapter>()?.FirstOrDefault();
+                //    if (member != null)
+                //    {
+                //        members.Add(member);
+                //    }
+
+                //});
+                var tempRemoval = new List<IGroupableDirectoryAdapter>(members);
+                Parallel.ForEach(MembersToRemove, m =>
+                {
+
+                    lock (_membersLock)
+                    {
+                        if (members.Contains(m.Member))
+                        {
+                            members.Remove(m.Member);
+                        }
+                    }
+
+                });
+                //tempRemoval.ForEach(m =>
+                //{
+                //    if (MembersToRemove.Select(gm => gm.Member).Contains(m))
+                //    {
+                //        members.Remove(m);
+                //    }
+                //});
+                Parallel.ForEach(MembersToRemove, m => {
+                    lock (_membersLock)
+                    {
+                        if (!members.Contains(m.Member))
+                        {
+                            members.Add(m.Member);
+                        }
+                    }
+                });
+                //MembersToAdd.ForEach(m =>
+                //{
+                //    if (!members.Contains(m.Member))
+                //        members.Add(m.Member);
+                //});
+                return members;
+            }
+        }
+        /// <summary>
+        /// Removes a member from this group
+        /// </summary>
+        /// <param name="member">The user or group to remove</param>
+        public void UnassignMember(IGroupableDirectoryAdapter member)
+        {
+
+            MembersToRemove.Add(new GroupMembership(this, member));
+            HasUnsavedChanges = true;
+        }
+        /// <summary>
+        /// Assigns a member to this group
+        /// </summary>
+        /// <param name="member"></param>
+        public void AssignMember(IGroupableDirectoryAdapter member)
+        {
+
+            MembersToAdd.Add(new GroupMembership(this, member));
+            HasUnsavedChanges = true;
+        }
+        public int CompareTo(object? obj)
+        {
+            if (obj is ADGroup g)
+            {
+                return CanonicalName.CompareTo(g.CanonicalName);
+            }
+
+            return 0;
+        }
+
+
+    }
+}

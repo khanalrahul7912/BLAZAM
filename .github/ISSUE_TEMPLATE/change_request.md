@@ -1,6 +1,6 @@
 ---
 name: Change request
-about: Suggest an change for Blazam
+about: Suggest an change for AD Manager
 title: ''
 labels: 'change'
 type: 'Feature'

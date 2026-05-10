@@ -1,0 +1,63 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>ADManager.Common</RootNamespace>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\Contexts\**" />
+    <Compile Remove="Data\Permissions\**" />
+    <EmbeddedResource Remove="Data\Contexts\**" />
+    <EmbeddedResource Remove="Data\Permissions\**" />
+    <None Remove="Data\Contexts\**" />
+    <None Remove="Data\Permissions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="BlazorTemplater" />
+	  <PackageReference Include="Cassia" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+	  <PackageReference Include="MudBlazor" />
+	  <PackageReference Include="MudBlazor.Markdown" />
+	  <PackageReference Include="Newtonsoft.Json" />
+	  <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" />
+	  <PackageReference Include="Serilog" />
+	  <PackageReference Include="Serilog.AspNetCore" />
+	  <PackageReference Include="Serilog.Extensions.Logging" />
+	  <PackageReference Include="SixLabors.ImageSharp" />
+	  <PackageReference Include="System.DirectoryServices" />
+	  <PackageReference Include="System.DirectoryServices.AccountManagement" />
+	  <PackageReference Include="System.DirectoryServices.Protocols" />
+	  <PackageReference Include="System.Management" />
+	  <PackageReference Include="System.Security.Permissions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ADManagerFileSystem\ADManagerFileSystem.csproj" />
+    <ProjectReference Include="..\ADManagerGlobal\ADManagerGlobal.csproj" />
+    <ProjectReference Include="..\ADManagerLocalization\ADManagerLocalization.csproj" />
+    <ProjectReference Include="..\ADManagerLoggers\ADManagerLogger.csproj" />
+    <ProjectReference Include="..\ADManagerPlugins\ADManagerPlugins.csproj" />
+  </ItemGroup>
+
+</Project>

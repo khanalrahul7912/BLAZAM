@@ -1,0 +1,15 @@
+﻿using ADManager.Database.Models.User;
+
+namespace ADManager.Database.Models.Notifications
+{
+    public class NotificationSubscription : RecoverableAppDbSetBase
+    {
+        public int UserId { get; set; }
+        public AppUser User { get; set; }
+        public List<SubscriptionNotificationType> NotificationTypes { get; set; } = [];
+        public string OU { get; set; }
+        public bool InApp { get; set; }
+        public bool ByEmail { get; set; }
+        public bool Block { get; set; } = false;
+    }
+}

@@ -45,12 +45,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build application (Release)
-        run: dotnet publish -c Release -o bin/publish BLAZAM/BLAZAM.csproj
+        run: dotnet publish -c Release -o bin/publish ADManager/ADManager.csproj
       - name: Set assembly version as environment variable
         shell: pwsh
         id: get_version
         run: |
-          $file = "bin/publish/BLAZAM.dll";
+          $file = "bin/publish/ADManager.dll";
           $versionInfo = (Get-Item $file).VersionInfo
           $fileVersion = $versionInfo.FileVersion
           $productVersion = $versionInfo.ProductVersion
@@ -60,14 +60,14 @@ jobs:
 
 
       - name: Compress files
-        run: Compress-Archive -Path bin/publish/* -DestinationPath blazam-nightly-v${{ env.ASSEMBLY_VERSION }}.zip
+        run: Compress-Archive -Path bin/publish/* -DestinationPath admanager-nightly-v${{ env.ASSEMBLY_VERSION }}.zip
 
 
       # For Linux
       #- name: "Compress files"
       #  uses: montudor/action-zip@v1
       #  with:
-      #    args: zip -qq -r blazam-dev.zip bin/publish
+      #    args: zip -qq -r admanager-dev.zip bin/publish
 
     
       - name: Update nightly release
@@ -80,4 +80,4 @@ jobs:
           prerelease: true
           body: This release is always the latest nightly release. These versions are unstable and may break your application. You've been warned.
           files: |
-            ./blazam-nightly-v${{ env.ASSEMBLY_VERSION }}.zip
+            ./admanager-nightly-v${{ env.ASSEMBLY_VERSION }}.zip
