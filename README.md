@@ -46,7 +46,7 @@ sudo useradd -r -s /usr/sbin/nologin admanagement || true
 sudo chown -R admanagement:admanagement /opt/ad-management /var/lib/ad-management
 ```
 
-Publish from source (on build host):
+Publish from source (on a build host), then copy the published output to `/opt/ad-management` on the target server:
 
 ```bash
 dotnet publish BLAZAM/BLAZAM.csproj -c Release -o /opt/ad-management
