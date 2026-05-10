@@ -86,15 +86,8 @@ namespace BLAZAM
             Loggers.DatabaseType = Configuration?.GetValue<string>("DatabaseType") ?? "SQLite"; // Get DB type from config
 
             // Configure Seq logging server details.
-            Loggers.SeqServerUri = "http://logs.blazam.org:5341"; // Centralized logging server URI
-            if (Debugger.IsAttached) // Use a specific API key when debugging
-            {
-                Loggers.SeqAPIKey = "xE50e1ljqtgLzHcu8pYC"; // Development/Debug API Key
-            }
-            else // Use a different API key for production/release builds
-            {
-                Loggers.SeqAPIKey = "8TeLknA8XBk5ybamT5m9"; // Production API Key
-            }
+            Loggers.SeqServerUri = Configuration?.GetValue<string>("Logging:Seq:Url"); // Optional centralized logging endpoint
+            Loggers.SeqAPIKey = Configuration?.GetValue<string>("Logging:Seq:ApiKey"); // Optional ingestion API key
 
             // Setup local file logging and Seq logging using Serilog.
             Loggers.SetupLoggers(WritablePath + $"logs{Path.DirectorySeparatorChar}", ApplicationInfo.runningVersion.ToString());

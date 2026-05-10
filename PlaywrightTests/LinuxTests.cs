@@ -6,7 +6,7 @@ namespace PlaywrightTests
     [TestFixture]
     public class LinuxTests : Tests
     {
-        protected virtual string BaseUrl { get { return "https://beta.blazam.org"; } }
+        protected virtual string BaseUrl => Environment.GetEnvironmentVariable("AD_MANAGEMENT_TEST_URL") ?? "https://localhost";
 
     }
 }

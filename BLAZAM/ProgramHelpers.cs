@@ -357,19 +357,19 @@ namespace BLAZAM
             {
                 c.SwaggerDoc("v1", new OpenApiInfo // Define API document information
                 {
-                    Title = "Blazam API",
+                    Title = "AD-Management API",
                     Version = "v1",
-                    Description = "The official Blazam API documentation." +
+                    Description = "The official AD-Management API documentation." +
                                   "<br/>Authorization is required for API access." +
                                   "<br/>The \"Authorization\" header value must be \"Bearer {token}\"",
-                    License = new OpenApiLicense() { Name = "MIT License", Url = new Uri("https://github.com/Blazam-App/BLAZAM/blob/v1-Dev/LICENSE") },
+                    License = new OpenApiLicense() { Name = "MIT License", Url = new Uri("https://github.com/khanalrahul7912/BLAZAM/blob/main/LICENSE") },
                     Contact = new()
                     {
-                        Email = "support@blazam.org",
-                        Name = "Blazam Support",
-                        Url = new("https://blazam.org/support")
+                        Email = "support@example.com",
+                        Name = "AD-Management Support",
+                        Url = new("https://github.com/khanalrahul7912/BLAZAM/issues")
                     },
-                    TermsOfService = new Uri("https://blazam.org/tos")
+                    TermsOfService = new Uri("https://github.com/khanalrahul7912/BLAZAM")
                 });
 
                 // Include XML comments from the assembly for richer descriptions (ensure XML doc generation is enabled in build settings)
@@ -379,7 +379,7 @@ namespace BLAZAM
                 // Configure Swagger UI to use JWT Bearer authentication
                 var jwtSecurityScheme = new OpenApiSecurityScheme
                 {
-                    Description = "Enter only the token supplied by Blazam (without 'Bearer ' prefix)", // User instruction
+                    Description = "Enter only the token supplied by AD-Management (without 'Bearer ' prefix)", // User instruction
                     Name = "Authorization", // Header name
                     In = ParameterLocation.Header, // Location of the token
                     Type = SecuritySchemeType.Http, // Type of scheme

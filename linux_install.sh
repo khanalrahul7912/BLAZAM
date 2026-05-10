@@ -35,8 +35,8 @@ readonly SSL_KEY_PATH="/etc/ssl/private/blazam-selfsigned.key"
 # --- Seq Logging Configuration ---
 # Set ENABLE_SEQ_LOGGING to "true" to send this script's logs to a Seq server.
 readonly ENABLE_SEQ_LOGGING="false"
-readonly SEQ_SERVER_URL="http://logs.blazam.org:5341" # e.g., http://seq.example.com:5341
-readonly SEQ_API_KEY="ZwXWKRu2lMrJ9qHaFTzx" # Optional: Your Seq Ingestion API Key
+readonly SEQ_SERVER_URL="" # e.g., http://seq.example.com:5341
+readonly SEQ_API_KEY="" # Optional: Your Seq Ingestion API Key
 
 # --- Global Variables ---
 DOMAIN_NAME=""

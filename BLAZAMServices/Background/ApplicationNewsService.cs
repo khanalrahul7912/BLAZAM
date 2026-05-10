@@ -12,8 +12,8 @@ namespace BLAZAM.Services.Background
     [AutoStartBackgroundService(true)]
     public class ApplicationNewsService : DatabaseBackgroundServiceBase, IApplicationNewsService
     {
-        private const string _primaryNewsApi = "https://blazam.org/api/";
-        private const string _secondaryNewsApi = "https://blazam-news.azurewebsites.net/api/";
+        private const string _primaryNewsApi = "https://localhost/";
+        private const string _secondaryNewsApi = "https://localhost/";
         private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
         private readonly HttpClient _httpClient;
