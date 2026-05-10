@@ -365,7 +365,6 @@ namespace BLAZAM
                     License = new OpenApiLicense() { Name = "MIT License", Url = new Uri("https://github.com/khanalrahul7912/BLAZAM/blob/main/LICENSE") },
                     Contact = new()
                     {
-                        Email = "support@example.com",
                         Name = "AD-Management Support",
                         Url = new("https://github.com/khanalrahul7912/BLAZAM/issues")
                     },

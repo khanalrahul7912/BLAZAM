@@ -49,8 +49,10 @@ sudo chown -R admanagement:admanagement /opt/ad-management /var/lib/ad-managemen
 Publish from source (on build host):
 
 ```bash
-dotnet publish path/to/BLAZAM.csproj -c Release -o /opt/ad-management
+dotnet publish BLAZAM/BLAZAM.csproj -c Release -o /opt/ad-management
 ```
+
+> If your local folder layout differs, update the `.csproj` path accordingly.
 
 ### 4) Configure systemd service
 
